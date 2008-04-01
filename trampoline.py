@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, sys
 import types
 from events import TimeoutEvent
 import time
