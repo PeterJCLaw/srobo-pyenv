@@ -5,6 +5,8 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     stream = sys.stdout)
 
+sys.stderr = sys.stdout = open("log.txt", "at")
+
 os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
 
 print "Initialising trampoline..."
