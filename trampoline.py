@@ -1,3 +1,4 @@
+import subprocess
 import types
 from events import TimeoutEvent
 import time
@@ -26,9 +27,15 @@ class Trampoline:
         robot.event = None
         
         stack.append(robot.main(corner=0,colour=0,game=0))
+
+        lastsync = 0
         
         while True:
             #Process any background tasks
+            if time.time() > lastsync + 5:
+                subprocess.Popen("sync").wait()
+                lastsync = time.time()
+
             try:
                 #Try to run the function on the top of the stack
                 #Extend to an empty list to force it to be a list
