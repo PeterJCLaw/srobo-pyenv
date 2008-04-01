@@ -33,6 +33,7 @@ class Trampoline:
         while True:
             #Process any background tasks
             if time.time() > lastsync + 5:
+                sys.stdout.flush()
                 subprocess.Popen("sync").wait()
                 lastsync = time.time()
 
