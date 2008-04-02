@@ -52,7 +52,7 @@ def readinputs():
     bytes = [ord(x) for x in val]
     words = [0] * 8
     for i in range(0, 8):
-        words[i] = (bytes[2*i] << 8) & (bytes[2*i+1] & 0xFF)
+        words[i] = (bytes[2*i] << 8) | (bytes[2*i+1] & 0xFF)
 
     return words
 
