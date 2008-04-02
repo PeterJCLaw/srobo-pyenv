@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, logging, os, os.path
+import sys, logging, os, os.path, subprocess
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -26,6 +26,13 @@ try:
 
     power.clearwatchdog()
     print "Watchdog cleared"
+
+    # Are we in competition mode?
+    if (power.getswitches() & 1) == 0:
+        print "Starting xbd, the radio server"
+        xblog = open("xbd-log.txt","at")
+        subprocess.Popen(["./xbd", "-s", "/dev/ttyS0"],
+                         stdout = xblog, stderr = xblog )
     
     t = trampoline.Trampoline()
     print "Trampoline initialised"
