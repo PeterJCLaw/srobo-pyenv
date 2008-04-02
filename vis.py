@@ -40,7 +40,7 @@ def vispoll():
         text = ""
         while True:
             if select.select([fifo], [], [], 0) == ([], [], []):
-		if text[-6:] == "BLOBS\n":
+                if text[-6:] == "BLOBS\n":
                     text = text[:-6]
                     break
 
