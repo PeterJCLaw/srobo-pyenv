@@ -20,6 +20,7 @@ JOINTIO_OUTPUT_READ = 3
 # Read the inputs in digital form
 JOINTIO_INPUT_DIG = 4
 
+iosens = [0, 1, 2, 3]
 
 class IOEvent(Event):
     def __init__(self, events):
@@ -76,7 +77,8 @@ def iopoll():
             setbits = []
             for x in range(0, 4):
                 if (diff & (1<<x)) != 0:
-                    setbits.append( x )
+                    if x in iosens:
+                        setbits.append( x )
 
             yield IOEvent(setbits)
         else:
