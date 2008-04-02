@@ -65,11 +65,11 @@ def checkjointio():
 
 def iopoll():
     pass
-    last_read = read()
+    last_read = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
     yield None
 
     while 1:
-        v = read()
+        v = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
         diff = last_read ^ v
         last_read = v
         if diff:
