@@ -17,15 +17,18 @@ try:
 
     import jointio, motor, pwm, vis, c2py, power
     print "Peripheral libraries imported"
+    power.setleds(1)
     
     import robot
     print "User robot code import succeeded"
 
     import trampoline
     print "Trampoline imported"
+    power.setleds(2)
 
     power.clearwatchdog()
     print "Watchdog cleared"
+    power.setleds(4)
 
     # Are we in competition mode?
     if (power.getswitches() & 1) == 0:
@@ -33,9 +36,11 @@ try:
         xblog = open("xbd-log.txt","at")
         subprocess.Popen(["./xbd", "-s", "/dev/ttyS0"],
                          stdout = xblog, stderr = xblog )
+    power.setleds(8)
     
     t = trampoline.Trampoline()
     print "Trampoline initialised"
+    power.setleds(0)
     
     print "Starting trampoline"
     t.schedule()
