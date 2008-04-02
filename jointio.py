@@ -25,7 +25,7 @@ iosens = [0, 1, 2, 3]
 class IOEvent(Event):
     def __init__(self, events):
         Event.__init__(self, iopoll)
-        self.events = events
+        self.pins = events
 
 def setoutput(self, bit, value):
     global curout
