@@ -21,9 +21,9 @@ JOINTIO_OUTPUT_READ = 3
 JOINTIO_INPUT_DIG = 4
 
 
-class DIOEvent(Event):
+class IOEvent(Event):
     def __init__(self, events):
-        Event.__init__(self, diopoll)
+        Event.__init__(self, iopoll)
         self.events = events
 
 def setoutput(self, bit, value):
@@ -78,6 +78,6 @@ def iopoll():
                 if (diff & (1<<x)) != 0:
                     setbits.append( x )
 
-            yield DIOEvent(setbits)
+            yield IOEvent(setbits)
         else:
             yield None
