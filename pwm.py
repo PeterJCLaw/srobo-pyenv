@@ -1,7 +1,7 @@
 import c2py
 from repeat import *
 
-ADDRESS = 0x0F
+ADDRESS = 0x1E
 
 PWM_CMD_SET = 1
 
