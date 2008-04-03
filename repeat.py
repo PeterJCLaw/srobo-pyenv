@@ -1,57 +1,46 @@
 import c2py
 
-MAXERR = 10
-
 def getbyte(address, cmd):
-    count = 0
-    while count < MAXERR:
+    while True:
         try:
             byte = c2py.readbytedata( address, cmd, 1 )
             break
         except c2py.I2CError:
-            count = count + 1
-    
-    if count == MAXERR:
-        raise c2py.I2CError
-
+            pass
     return byte
 
+def setword(address, cmd, val):
+    while True:
+        try:
+            c2py.writeworddata(address, cmd, val, 1)
+            break
+        except c2py.I2CError:
+            pass
+
 def setbyte(address, cmd, val):
-    count = 0
-    while count < MAXERR:
+    while True:
         try:
             c2py.writebytedata(address, cmd, val, 1)
             break
         except c2py.I2CError:
-            count = count + 1
-
-    if count == MAXERR:
-        raise c2py.I2CError
+            pass
 
 def getword(address, cmd):
-    count = 0
-    while count < MAXERR:
+    while True:
         try:
             val = c2py.readworddata(address, cmd, 1)
             break
         except c2py.I2CError:
-            count = count + 1
+            pass
 
-    if count == MAXERR:
-        raise c2py.I2CError
-    
     return val
 
 def getblock(address, cmd, bytes):
-    count = 0
-    while count < MAXERR:
+    while True:
         try:
             val = c2py.readblockdata(address, cmd, bytes)
             break
         except c2py.I2CError:
-            count = count + 1
+            pass
 
-    if count == MAXERR:
-        raise c2py.I2CError
-    
     return val

@@ -23,7 +23,7 @@ def checkpower():
         return False
 
 def getfirmware():
-    return getword(ADDRESS, CMD_GET_FIRMWARE)
+    return c2py.readworddata(ADDRESS, CMD_GET_FIRMWARE, 1)
 
 def setleds(v):
     setbyte(ADDRESS, CMD_WRITE_LEDS, v & 0x0F)

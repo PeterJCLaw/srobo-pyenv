@@ -1,4 +1,5 @@
 import c2py
+from repeat import *
 
 ADDRESS = 0x12
 
@@ -44,22 +45,22 @@ def __set__( channel, speed ):
     speed = abs(int(speed * 3.28))
 
     v = speed | (dir << 9) | (channel<<11)
-    count = 0
 
-    while count < MAXERR:
-        c2py.writeworddata( ADDRESS, MOTOR_CMD_CONF, v, 1 )
+    while True:
+        try:
+            c2py.writeworddata( ADDRESS, MOTOR_CMD_CONF, v, 1 )
+        except:
+            continue
 
         cmd = (MOTOR_GET0, MOTOR_GET1)[channel]
 
-        n = c2py.readworddata( ADDRESS, cmd, 1)
+        try:
+            n = c2py.readworddata( ADDRESS, cmd, 1)
+        except:
+            continue
 
         if (n & 0x1FF) == speed and (n >> 9) == dir:
             break
-
-        count = count + 1
-    
-    if count == MAXERR:
-        raise c2py.I2CError
 
 def setspeed(*args):
     if len(args) == 1:

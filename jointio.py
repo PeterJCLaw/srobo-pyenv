@@ -37,16 +37,10 @@ def setoutput(self, bit, value):
         else:
             curout |= (1<<bit)
 
-        count = 0
-        while count < MAXERR:
+        while True:
             setbyte(ADDRESS, JOINTIO_OUTPUT, curout)
             if getbyte(ADDRESS, JOINTIO_OUTPUT_READ) == curout:
                 break
-
-            count = count + 1
-
-        if count == MAXERR:
-            raise c2py.I2CError
 
 def readinputs():
     val = getblock(ADDRESS, JOINTIO_INPUT, 16)
@@ -59,7 +53,7 @@ def readinputs():
 
 def checkjointio():
     try:
-        getbyte(ADDRESS, JOINTIO_OUTPUT_READ)
+        c2py.readbytedata(ADDRESS, JOINTIO_OUTPUT_READ, 1)
     except c2py.I2CError:
         return False
     return True

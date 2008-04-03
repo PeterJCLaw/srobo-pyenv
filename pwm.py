@@ -1,4 +1,5 @@
 import c2py
+from repeat import *
 
 ADDRESS = 0x0F
 
@@ -12,5 +13,5 @@ def setpos( s, pos ):
 
     v = pos << 8 | s
 
-    c2py.writeworddata( ADDRESS, PWM_CMD_SET, v, 1 )
+    setword( ADDRESS, PWM_CMD_SET, v)
 
