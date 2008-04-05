@@ -27,9 +27,9 @@ class IOEvent(Event):
         Event.__init__(self, iopoll)
         self.pins = events
 
-def setoutput(self, bit, value):
+def setoutput(bit, value):
     global curout
-    if bit > 4:
+    if bit > 3:
         logging.error("Trying to set an invalid DIO pin.")
     else:
         if value == 0:
