@@ -39,7 +39,10 @@ try:
         print "In competition mode"
         print "Starting xbd, the radio server"
         xblog = open("xbd-log.txt","at")
-        subprocess.Popen(["./xbd", "-s", "/dev/ttyS0"],
+        subprocess.Popen(["./xbd",
+                          "-s", "/dev/ttyS0",
+                          "-b","57600",
+                          "--init-baud", "9600"],
                          stdout = xblog, stderr = xblog )
         
         import radio
