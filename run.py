@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, subprocess
+import sys, logging, os, os.path, subprocess, select
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -30,15 +30,25 @@ try:
     print "Watchdog cleared"
     power.setleds(4)
 
+    corner = 0
+    colour = 0
+    game = 0
+
     # Are we in competition mode?
     if (power.getswitches() & 1) == 0:
+        print "In competition mode"
         print "Starting xbd, the radio server"
         xblog = open("xbd-log.txt","at")
         subprocess.Popen(["./xbd", "-s", "/dev/ttyS0"],
                          stdout = xblog, stderr = xblog )
-    power.setleds(8)
-    
-    t = trampoline.Trampoline()
+        
+        import radio
+        settings = radio.wait_start()
+        corner,colour,game = settings["corner"], settings["colour"], settings["game"]
+
+    t = trampoline.Trampoline( corner = corner,
+                               colour = colour,
+                               game = game )
     print "Trampoline initialised"
     power.setleds(0)
     

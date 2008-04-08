@@ -9,8 +9,11 @@ except:
     pass
 
 class Trampoline:
-    def __init__(self):
+    def __init__(self, corner=0, colour=0, game=0):
         self.bgpolls = []
+        self.corner = corner
+        self.colour = colour
+        self.game = game
 
     def addtask(self, poll):
         self.bgpolls.append(poll)
@@ -26,7 +29,9 @@ class Trampoline:
 
         robot.event = None
         
-        stack.append(robot.main(corner=0,colour=0,game=0))
+        stack.append(robot.main(corner=self.corner,
+                                colour=self.colour,
+                                game=self.game))
 
         lastsync = 0
         
