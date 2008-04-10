@@ -19,8 +19,8 @@ class VISEvent(Event):
         Event.__init__(self, vispoll)
         self.blobs = []
 
-    def addblob(self, centrex, centrey, mass, colour):
-        self.blobs.append(self.Blob(centrex, centrey, mass, colour))
+    def addblob(self, centrex, centrey, width, height, mass, colour):
+        self.blobs.append(self.Blob(centrex, centrey, width, height, mass, colour))
 
 def vispoll():
     sp = subprocess.Popen("./hueblobs", stdout=subprocess.PIPE,
