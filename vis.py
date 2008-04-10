@@ -8,12 +8,12 @@ from events import Event
 class VISEvent(Event):
     class Blob:
         def __init__(self, centrex, centrey, width, height, mass, colour):
-            self.centrex = centrex / 3.2
-            self.centrey = centrey / 2.4
-            self.mass = mass
-            self.colour = colour
-            self.width = width
-            self.height = height
+            self.centrex = float(centrex) / 3.2
+            self.centrey = float(centrey) / 2.4
+            self.mass = int(mass)
+            self.colour = int(colour)
+            self.width = int(width)
+            self.height = int(height)
     
     def __init__(self):
         Event.__init__(self, vispoll)
