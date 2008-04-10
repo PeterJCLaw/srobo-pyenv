@@ -7,11 +7,13 @@ from events import Event
 
 class VISEvent(Event):
     class Blob:
-        def __init__(self, centrex, centrey, mass, colour):
+        def __init__(self, centrex, centrey, width, height, mass, colour):
             self.centrex = centrex / 3.2
             self.centrey = centrey / 2.4
             self.mass = mass
             self.colour = colour
+            self.width = width
+            self.height = height
     
     def __init__(self):
         Event.__init__(self, vispoll)
@@ -60,5 +62,6 @@ def vispoll():
             for line in lines:
                 if line != "":
                     info = line.split(",")
-                    event.addblob(info[0], info[1], info[2], info[3])
+                    event.addblob(info[0], info[1], info[2], info[3], info[4],
+                            info[5])
             yield event
