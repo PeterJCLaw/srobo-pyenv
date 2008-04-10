@@ -77,11 +77,12 @@ def iopoll():
         last_read = v
         if diff:
             setbits = []
-            for x in range(0, 4):
+            for x in range(0, 8):
                 if (diff & (1<<x)) != 0:
                     if x in iosens:
                         setbits.append( x )
 
-            yield IOEvent(setbits)
+            if len(setbits) > 0:
+                yield IOEvent(setbits)
         else:
             yield None
