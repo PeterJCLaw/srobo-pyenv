@@ -8,8 +8,8 @@ from events import Event
 class VISEvent(Event):
     class Blob:
         def __init__(self, centrex, centrey, mass, colour):
-            self.centrex = centrex
-            self.centrey = centrey
+            self.centrex = centrex / 3.2
+            self.centrey = centrey / 2.4
             self.mass = mass
             self.colour = colour
     
@@ -21,7 +21,7 @@ class VISEvent(Event):
         self.blobs.append(self.Blob(centrex, centrey, mass, colour))
 
 def vispoll():
-    sp = subprocess.Popen("./testcam", stdout=subprocess.PIPE,
+    sp = subprocess.Popen("./hueblobs", stdout=subprocess.PIPE,
             stdin=subprocess.PIPE)
     fifo = sp.stdout.fileno()
     command = sp.stdin
