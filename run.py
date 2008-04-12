@@ -18,6 +18,7 @@ try:
     import jointio, motor, pwm, vis, c2py, power
     print "Peripheral libraries imported"
     power.setleds(1)
+    power.clearwatchdog()
     
     import robot
     print "User robot code import succeeded"
@@ -26,7 +27,6 @@ try:
     print "Trampoline imported"
     power.setleds(2)
 
-    power.clearwatchdog()
     print "Watchdog cleared"
     power.setleds(4)
 
@@ -62,4 +62,4 @@ except:
     print "Error: "
     print sys.exc_info()[0]
     print sys.exc_info()[1]
-    print sys.exc_info()[2]
+    print "On line", sys.exc_info()[2].tb_lineno
