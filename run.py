@@ -47,7 +47,7 @@ try:
         
         import radio
         settings = radio.wait_start()
-        corner,colour,game = settings["corner"], settings["colour"], settings["game"]
+        corner,colour,game = int(settings["corner"]), int(settings["colour"]), int(settings["game"])
 
     t = trampoline.Trampoline( corner = corner,
                                colour = colour,

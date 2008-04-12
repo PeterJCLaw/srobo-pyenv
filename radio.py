@@ -7,7 +7,7 @@ if os.getenv("LD_LIBRARY_PATH") != None:
 os.putenv("LD_LIBRARY_PATH", lpath)
 
 def decode_str(s):
-    r = re.compile("([^= ]+)=([^= ]+)")
+    r = re.compile("([^= ]+)=([^=, ]+)")
     matches = r.findall(s)
 
     settings = {}
