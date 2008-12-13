@@ -9,7 +9,7 @@ def setpos( s, pos ):
     """Set servo number s to position pos.
     Pos ranges between 0 and 100. """
 
-    pos = int((pos/100.0) * 180)
+    pos = int((pos/100.0) * 255)
 
     v = pos << 8 | s
 
