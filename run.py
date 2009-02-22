@@ -11,6 +11,9 @@ os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
 
 print "Initialising trampoline..."
 try:
+    import fw
+    fw.update_all()    
+
     loc = os.path.join(os.curdir, "robot.zip")
     sys.path.insert(0, loc)
     print "%s added to python path." % loc
