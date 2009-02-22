@@ -1,9 +1,4 @@
-from motor import checkmotor
-
-if checkmotor():
-    from motor import setpower, readpower
-else:
-    setspeed = None
+from motor import setpower, readpower
 
 from vis import *
 from pwm import setpos
