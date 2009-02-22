@@ -13,9 +13,3 @@ vision = vispoll()
 vision.next()
 
 from jointio import *
-if checkjointio():
-    io = iopoll()
-    io.next()
-else:
-    logging.error("DIO Failed")
-    io = None

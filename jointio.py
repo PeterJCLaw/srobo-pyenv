@@ -1,9 +1,8 @@
 from events import Event
-import c2py
 from repeat import *
 import logging
 
-ADDRESS = 0x14
+ADDRESS = 0x24
 
 limits = []
 
@@ -51,13 +50,15 @@ def readinputs():
 
     return words
 
-def checkjointio():
-    try:
-        c2py.readbytedata(ADDRESS, JOINTIO_OUTPUT_READ, 1)
-    except c2py.I2CError:
-        return False
-    return True
+def read_inputs_dig():
+    val = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
+    inputs = [0] * 8
+    for i in range(0, 8):
+        if val & (1 << i):
+            inputs[i] = 1
 
+    return inputs
+    
 def setsensitive(x):
     if not x in iosens:
         iosens.append(x)
