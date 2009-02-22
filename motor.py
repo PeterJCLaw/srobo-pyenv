@@ -62,7 +62,31 @@ def __set__( channel, speed ):
         if (n & 0x1FF) == speed and (n >> 9) == dir:
             break
 
-def setspeed(*args):
+def __get__(channel):
+	if channel not in [0, 1]:
+		raise ValueError, "Incorrect channel read"
+
+        cmd = (MOTOR_GET0, MOTOR_GET1)[channel]
+
+        try:
+            n = c2py.readworddata( ADDRESS, cmd, 1)
+        except:
+	    return 0	# Should do something more sensible here!
+	
+	speed = n & 0x1FF
+	dir = n>>9
+	
+	if(dir == OFF or dir == BRAKE):
+		return 0
+	elif dir == FORWARD:
+		return speed/3.28
+	elif dir == BACKWARD:
+		return -1*speed/3.28
+	
+
+            
+
+def setpower(*args):
     if len(args) == 1:
         __set__( 0, args[0] )
         __set__( 1, args[0] )
@@ -71,3 +95,9 @@ def setspeed(*args):
         __set__( 1, args[1] )
     else:
         raise TypeError, "setspeed takes one or two numeric arguments"
+
+def readpower(*args):
+	if len(args) == 1:
+		return	__get__(args[0])
+	else:
+		raise TypeError, "readpower takes only one numeric argument"

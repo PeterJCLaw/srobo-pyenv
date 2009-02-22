@@ -1,7 +1,7 @@
 from motor import checkmotor
 
 if checkmotor():
-    from motor import setspeed
+    from motor import setpower, readpower
 else:
     setspeed = None
 
