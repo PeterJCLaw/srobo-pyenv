@@ -32,6 +32,16 @@ class InvalidPin(Exception):
     def __str__(self):
         return repr(self.parameter)
 
+class jointio(object):
+	def __init__(self):
+		pass
+	def pin(self, x):
+		return readpin(x)
+
+	def apin(self, x):
+		return readapin(x)
+
+io = jointio()
 
 def setoutput(bit, value):
     global curout
