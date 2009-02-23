@@ -26,6 +26,13 @@ class IOEvent(Event):
         Event.__init__(self, iopoll)
         self.pins = events
 
+class InvalidPin(Exception):
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return repr(self.parameter)
+
+
 def setoutput(bit, value):
     global curout
     if bit > 3:
@@ -50,14 +57,15 @@ def readinputs():
 
     return words
 
-def read_inputs_dig():
-    val = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
-    inputs = [0] * 8
-    for i in range(0, 8):
-        if val & (1 << i):
-            inputs[i] = 1
-
-    return inputs
+def readpin(pin):
+    if pin >= 0 and pin < 8:
+        val = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
+        if val & (1 << pin):
+            return 1
+	else:
+	    return 0
+    else:
+	raise InvalidPin("Pin out of range")
     
 def setsensitive(x):
     if not x in iosens:
