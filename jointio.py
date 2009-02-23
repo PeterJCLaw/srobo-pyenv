@@ -48,14 +48,14 @@ def setoutput(bit, value):
             if getbyte(ADDRESS, JOINTIO_OUTPUT_READ) == curout:
                 break
 
-def readinputs():
-    val = getblock(ADDRESS, JOINTIO_INPUT, 16)
-    bytes = [ord(x) for x in val]
-    words = [0] * 8
-    for i in range(0, 8):
-        words[i] = (bytes[2*i] << 8) | (bytes[2*i+1] & 0xFF)
-
-    return words
+def readapin(pin):
+    if pin >= 0 and pin < 8:
+	val = getblock(ADDRESS, JOINTIO_INPUT, 16)
+	bytes = [ord(x) for x in val]
+	word = (bytes[2*pin] << 8) | (bytes[2*pin+1] & 0xFF)
+    else:
+	raise InvalidPin("Pin Out of range")
+    return (float(word)/1023)*3.3	#return a voltage value
 
 def readpin(pin):
     if pin >= 0 and pin < 8:
