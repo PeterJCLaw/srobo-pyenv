@@ -77,14 +77,6 @@ def readpin(pin):
     else:
 	raise InvalidPin("Pin out of range")
     
-def setsensitive(x):
-    if not x in iosens:
-        iosens.append(x)
-
-def removesensitive(x):
-    if x in iosens:
-        iosens.remove(x)
-
 def iopoll():
     pass
     last_read = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
