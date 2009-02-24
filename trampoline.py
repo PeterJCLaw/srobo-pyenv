@@ -78,6 +78,8 @@ class Coroutine:
                     self.polls.append(result)
                 elif isinstance(result, int) or isinstance(result, float):
                     self.polls.append( time_event.time_poll(result) )
+                else:
+                    print "WARNING: Ignoring poll", str(result)
 
 def sync():
     "Sync to disk every 5 seconds"
