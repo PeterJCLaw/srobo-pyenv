@@ -15,4 +15,4 @@ def time_poll(t):
     while True:
         if (time.time() - start) > t:
             yield TimeoutEvent(t)
-        yield
+        yield None
