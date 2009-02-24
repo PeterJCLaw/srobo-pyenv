@@ -23,7 +23,7 @@ iosens = [0, 1, 2, 3]
 
 class IOEvent(Event):
     def __init__(self, events):
-        Event.__init__(self, iopoll)
+        Event.__init__(self, io)
         self.pins = events
 
 class InvalidPin(Exception):
