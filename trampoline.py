@@ -1,20 +1,12 @@
 import subprocess, sys
 import types
-from events import TimeoutEvent
-import time
 import logging
 try:
     import robot
 except:
     pass
 import addhack
-
-def time_poll(t):
-    start = time.time()
-    while True:
-        if (time.time() - start) > t:
-            yield TimeoutEvent(t)
-        yield
+import time_event
 
 class Coroutine:
     def __init__(self, generator, name = ""):
@@ -85,7 +77,7 @@ class Coroutine:
                 if result.__class__ == types.GeneratorType:
                     self.polls.append(result)
                 elif isinstance(result, int) or isinstance(result, float):
-                    self.polls.append( time_poll(result) )
+                    self.polls.append( time_event.time_poll(result) )
 
 def sync():
     "Sync to disk every 5 seconds"

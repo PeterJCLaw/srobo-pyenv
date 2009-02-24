@@ -10,5 +10,5 @@ vision.next()
 from jointio import *
 from addhack import add_coroutine
 from trampoline import coroutine
-from events import timeout
+from time_event import timeout
 
