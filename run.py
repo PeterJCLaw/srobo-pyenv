@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, subprocess, select
+import sys, logging, os, os.path, subprocess, select, time
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -20,31 +20,29 @@ try:
 
     import jointio, motor, pwm, vis, c2py, power
     print "Peripheral libraries imported"
-    #power.setleds(1)
-    #power.clearwatchdog()
     
     import robot
     print "User robot code import succeeded"
 
     import trampoline
     print "Trampoline imported"
-    #power.setleds(2)
-
-    #print "Watchdog cleared"
-    #power.setleds(4)
 
     corner = 0
     colour = 0
     game = 0
 
-    while not power.getbutton()
+    while not power.getbutton():
+        power.setled(0,1)
+        time.sleep(0.5)
+        power.setled(0,0)
+        time.sleep(0.5)
     
 
     t = trampoline.Trampoline( corner = corner,
                                colour = colour,
                                game = game )
     print "Trampoline initialised"
-    #power.setleds(0)
+
     
     print "Starting trampoline"
     t.schedule()
