@@ -20,43 +20,31 @@ try:
 
     import jointio, motor, pwm, vis, c2py, power
     print "Peripheral libraries imported"
-    power.setleds(1)
-    power.clearwatchdog()
+    #power.setleds(1)
+    #power.clearwatchdog()
     
     import robot
     print "User robot code import succeeded"
 
     import trampoline
     print "Trampoline imported"
-    power.setleds(2)
+    #power.setleds(2)
 
-    print "Watchdog cleared"
-    power.setleds(4)
+    #print "Watchdog cleared"
+    #power.setleds(4)
 
     corner = 0
     colour = 0
     game = 0
 
-    # Are we in competition mode?
-    if (power.getswitches() & 1) == 0:
-        print "In competition mode"
-        print "Starting xbd, the radio server"
-        xblog = open("xbd-log.txt","at")
-        subprocess.Popen(["./xbd",
-                          "-s", "/dev/ttyS0",
-                          "-b","57600",
-                          "--init-baud", "9600"],
-                         stdout = xblog, stderr = xblog )
-        
-        import radio
-        settings = radio.wait_start()
-        corner,colour,game = int(settings["corner"]), int(settings["colour"]), int(settings["game"])
+    while not power.getbutton()
+    
 
     t = trampoline.Trampoline( corner = corner,
                                colour = colour,
                                game = game )
     print "Trampoline initialised"
-    power.setleds(0)
+    #power.setleds(0)
     
     print "Starting trampoline"
     t.schedule()
