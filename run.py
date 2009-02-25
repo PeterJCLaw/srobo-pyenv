@@ -36,6 +36,8 @@ try:
         power.setleds(0,0)
         time.sleep(0.5)
     power.setbutton()
+    power.setservopower(1)
+    power.setmotorpower(1)
     
 
     t = trampoline.Trampoline( colour = colour,
