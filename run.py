@@ -31,9 +31,9 @@ try:
     game = 0
 
     while not power.getbutton():
-        power.setled(0,1)
+        power.setleds(0,1)
         time.sleep(0.5)
-        power.setled(0,0)
+        power.setleds(0,0)
         time.sleep(0.5)
     power.setbutton()
     
