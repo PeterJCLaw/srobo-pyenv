@@ -7,6 +7,7 @@ except:
     pass
 import addhack
 import time_event
+from poll import Poll
 
 class Coroutine:
     def __init__(self, generator, name = ""):
@@ -77,9 +78,12 @@ class Coroutine:
                 if result.__class__ == types.GeneratorType:
                     self.polls.append(result)
                 elif isinstance(result, int) or isinstance(result, float):
-                    self.polls.append( time_event.time_poll(result) )
+                    self.polls.append( time_event.TimePoll(result) )
+                elif isinstance(result,Poll):
+                    self.polls.append(result)
                 else:
                     print "WARNING: Ignoring poll", str(result)
+                    print type(result)
 
 def sync():
     "Sync to disk every 5 seconds"

@@ -7,8 +7,10 @@ import logging
 vision = vispoll()
 vision.next()
 
-from jointio import *
+from poll import And, Or
+from jointio import io
 from addhack import add_coroutine
 from trampoline import coroutine
-from time_event import timeout
+from time_event import timeout, TimePoll
+
 

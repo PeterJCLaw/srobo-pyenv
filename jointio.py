@@ -1,6 +1,7 @@
 from events import Event
 from repeat import *
 import logging
+import poll
 
 ADDRESS = 0x24
 
@@ -32,16 +33,219 @@ class InvalidPin(Exception):
     def __str__(self):
         return repr(self.parameter)
 
-class jointio(object):
-	def __init__(self):
-		pass
-	def pin(self, x):
-		return readpin(x)
+class CannotEquate(Exception):
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return repr(self.parameter)
 
-	def apin(self, x):
-		return readapin(x)
+class ValWrapper:
+    def __init__(self, thing):
+        self.thing = thing
+    
+    def val(self):
+        return self.thing
 
-io = jointio()
+    def __str__(self):
+        return "ValWrapper(" + str(self.thing) + ")"
+
+class IOOperator(poll.Poll):
+    """Base class for IO pin operator classes"""
+    def __init__(self, *args):
+        al = []
+        for o in args:
+            if not hasattr(o, "val"):
+                al.append(ValWrapper(o))
+            else:
+                al.append(o)
+
+        self.operands = al
+
+    def __nonzero__(self):
+        "For when the operation gets casted into a bool"
+        return self.eval() != None
+
+class IOEqual(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        for op in self.operands[1:]:
+            if n != op.val():
+                return
+        return IOEvent(100)
+
+    def __str__(self):
+        return "IOEqual(%s)" % (" == ".join([str(x) for x in self.operands]))
+
+class IONotEqual(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        m = self.operands[1].val()
+        if n == m:
+            return
+        return IOEvent(100)
+
+    def __str__(self):
+        return "IONotEqual(%s)" % (" != ".join([str(x) for x in self.operands]))
+
+class IOLessThan(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        m = self.operands[1].val()
+        if n < m:
+            return IOEvent(100)
+        return
+
+    def __str__(self):
+        return "IOLessThan(%s < %s)" % (self.operands[0], self.operands[1])
+
+class IOGreaterThan(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        m = self.operands[1].val()
+        if n > m:
+            return IOEvent(100)
+        return
+
+    def __str__(self):
+        return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
+    
+class IOPoll(poll.Poll):
+    def __init__(self):
+        poll.Poll.__init__(self)
+
+    def __str__(self):
+        return "IOPoll(...)"
+
+    def __eq__(self,o):
+        return IOEqual( self, o )
+
+    def __lt__(self,o):
+        return IOLessThan( self, o )
+
+    def __gt__(self,o):
+        return IOGreaterThan( self, o )
+
+    def __ne__(self,o):
+        return IONotEqual( self, o )
+
+class Pin(IOPoll):
+    def __init__(self, num):
+        "num is the pin number we're dealing with"
+        self.num = num
+        # Initial value
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        v = self.val()
+        if v != self.ival:
+            self.ival = v
+            return IOEvent(self.num)
+        return None
+
+    def __repr__(self):
+        return "%i" % readpin(self.num)
+
+    def __str__(self):
+        return str(readpin(self.num))
+#        return "Pin(%i)" % self.num
+
+    def val(self):
+        return readpin(self.num)
+
+class OutputPin(IOPoll):
+    def __init__(self, num):
+        "num is the pin number we're dealing with"
+        self.num = num
+        # Initial value
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        if self.val() != self.ival:
+            return IOEvent(self.num)
+        return None
+
+    def __repr__(self):
+        return "%i" % readpin(self.num)
+
+    def __str__(self):
+        return "Pin(%i)" % self.num
+
+    def val(self):
+        return readpin(self.num)
+
+
+class AnaloguePin(IOPoll):
+    def __init__(self, num):
+        "num is the pin number we're dealing with"
+        self.num = num
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        if self.val() != self.ival:
+            return IOEvent(self.num)
+        return None
+
+    def __eq__(self,o):
+        raise CannotEquate("Analogue pins don't support the '==' operator.")
+
+    def __repr__(self):
+        return "%f" % readapin(self.num)
+
+    def __str__(self):
+        return "Pin(%i)" % self.num
+
+    def val(self):
+        return readapin(self.num)
+
+class Pins:
+    def __init__(self):
+        pass
+    
+    ######## Container Operators ########
+    def __getitem__(self, n):
+        "Return value of the pin"
+        return Pin(n)
+
+    def __setitem__(self, n, v):
+        "Set the output"
+        setoutput(n,v)
+
+class OutputPins:
+    def __init__(self):
+        pass
+    
+    ######## Container Operators ########
+    def __getitem__(self, n):
+        "Return value of the pin"
+        return Pin(n)
+
+    def __setitem__(self, n, v):
+        "Set the output"
+        setoutput(n,v)
+
+class AnaloguePins:
+    def __init__(self):
+        pass
+
+    ######## Container Operators ########
+    def __getitem__(self, n):
+        "Return value of the pin"
+        return readapin(n)
+
+    def __setitem__(self, n, v):
+        "Set the output"
+        raise RuntimeError( "Cannot set value of input pins" )
+
+class Jointio:
+    def __init__(self):
+        self.pin = Pins()
+        self.opin = OutputPins()
+        self.apin = AnaloguePins()
+
+io = Jointio()
 
 def setoutput(bit, value):
     global curout
@@ -76,24 +280,4 @@ def readpin(pin):
 	    return 0
     else:
 	raise InvalidPin("Pin out of range")
-    
-def iopoll():
-    pass
-    last_read = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
-    yield None
 
-    while 1:
-        v = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
-        diff = last_read ^ v
-        last_read = v
-        if diff:
-            setbits = []
-            for x in range(0, 8):
-                if (diff & (1<<x)) != 0:
-                    if x in iosens:
-                        setbits.append( x )
-
-            if len(setbits) > 0:
-                yield IOEvent(setbits)
-        else:
-            yield None
