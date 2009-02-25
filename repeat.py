@@ -44,3 +44,22 @@ def getblock(address, cmd, bytes):
             pass
 
     return val
+
+# following two functions to read and write to power board only
+def powerread(address, cmd):
+    while True:
+        try:
+            val = c2py.powerread(address, cmd)
+            break
+        except c2py.I2CError:
+            pass
+
+    return val
+
+def powerwrite(address, cmd, val):
+    while True:
+        try:
+            c2py.powerwrite(address, cmd, val)
+            break
+        except c2py.I2CError:
+            pass
