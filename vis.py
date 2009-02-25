@@ -4,8 +4,9 @@ import time
 import subprocess
 import logging
 from events import Event
+from poll import Poll
 
-class VISEvent(Event):
+class VisionEvent(Event):
     class Blob:
         def __init__(self, centrex, centrey, width, height, mass, colour):
             self.centrex = float(centrex) / 3.2
@@ -16,52 +17,90 @@ class VISEvent(Event):
             self.height = int(height)
     
     def __init__(self):
-        Event.__init__(self, vispoll)
+        Event.__init__(self)
         self.blobs = []
 
     def addblob(self, centrex, centrey, width, height, mass, colour):
         self.blobs.append(self.Blob(centrex, centrey, width, height, mass, colour))
 
-def vispoll():
-    sp = subprocess.Popen("./hueblobs", stdout=subprocess.PIPE,
+class VisProc:
+    def __init__(self):
+	sp = subprocess.Popen("./hueblobs", stdout=subprocess.PIPE,
             stdin=subprocess.PIPE)
-    fifo = sp.stdout.fileno()
-    command = sp.stdin
+	self.fifo = sp.stdout.fileno()
+	self.command = sp.stdin
+	self.reqnum = 0
+	self.text = ""
+	self.reqlist = []
 
-    yield None #End of setup
+    def make_req(self):
+	print "Make req called"
 
-    event = VISEvent()
+	#commands queued to hueblobs as it waits on stdin. If we add
+	#multiple lines, multiple requests
 
-    while True:
-        if sp.poll() != None:
-            logging.error("Camera failed")
-            while True:
-                yield None
+	print "Writing command " + str(self.reqnum)
+	self.command.write(str(self.reqnum) + "\n")
+	self.ournum = self.reqnum
+	self.reqnum += 1
+	return self.ournum
 
-        command.write("\n")
-        text = ""
+
+    def poll_req(self, num):
+	#Have we had a response for req 'num'?
+	print "dix"
+	for req in self.reqlist:
+	    if req.num == num:
+		return req
+
+	#No; so read more data from hueblobs
+
         while True:
-            if select.select([fifo], [], [], 0) == ([], [], []):
-                if text[-6:] == "BLOBS\n":
-                    text = text[:-6]
-                    break
-
-                if sp.poll() != None:
-                    logging.error("Camera failed")
-                    while True:
-                        yield None
+            if select.select([self.fifo], [], [], 0) == ([], [], []):
+		#No more data right now
+		break;
                     
-            text += os.read(fifo, 1)
+            self.text += os.read(self.fifo, 1)
 
-        lines = text.strip().split('\n')
+	if self.text[-6:] != "BLOBS\n":
+	    #Not at the end yet
+	    #FIXME: and if we return more than one?
+	    return None
+
+	self.text = self.text[:-6]
+        lines = self.text.strip().split('\n')
      
         if len(lines) == 0:
-            yield None
+            logging.error("hueblobs returned nothing")
         else:
-            event = VISEvent()
+	    reqtext = lines.pop()
+	    reqtext.rstrip('\n')
+
+            event = VisionEvent()
+	    print reqtext
+	    event.num = int(reqtext)
             for line in lines:
                 if line != "":
                     info = line.split(",")
+		    print "blob at " + str(info[0]) + " " + str(info[1])
                     event.addblob(info[0], info[1], info[2], info[3], info[4],
                             info[5])
-            yield event
+
+	    self.text = ""
+	    if num == event.num:
+		return event
+	    else:
+		self.reqlist.append(event)
+		return None
+
+print "Starting vision system"
+vis_proc = VisProc()
+
+class vision(Poll):
+    def __init__(self):
+	Poll.__init__(self)
+	self.our_req_num = vis_proc.make_req()
+
+    def eval(self):
+	return vis_proc.poll_req(self.our_req_num)
+
