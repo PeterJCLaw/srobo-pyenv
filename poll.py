@@ -1,3 +1,5 @@
+import time_event
+
 class Poll:
     def __init__(self):
         pass
@@ -23,10 +25,21 @@ class Poll:
     def __str__(self):
         return "Nothing Poll" 
 
+def convert_polls(polls):
+    res = []
+    for poll in polls:
+        if hasattr( poll, "eval" ):
+            res.append(poll)
+        elif isinstance( poll, int ) or isinstance( poll, float ):
+            res.append( time_event.TimePoll(poll) )
+        else:
+            print "Failed to convert \"%s\" into poll." % str(poll)
+    return res
+
 class Or(Poll):
     def __init__(self, *args):
         Poll.__init__(self)
-        self.operands = args
+        self.operands = convert_polls(args)
 
     def eval(self):
         # evaluate until one works...
@@ -42,7 +55,7 @@ class Or(Poll):
 class And(Poll):
     def __init__(self, *args):
         Poll.__init__(self)
-        self.operands = args
+        self.operands = convert_polls(args)
 
     def eval(self):
         # evaluate both things...
