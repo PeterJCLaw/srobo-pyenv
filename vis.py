@@ -34,12 +34,10 @@ class VisProc:
 	self.reqlist = []
 
     def make_req(self):
-	print "Make req called"
 
 	#commands queued to hueblobs as it waits on stdin. If we add
 	#multiple lines, multiple requests
 
-	print "Writing command " + str(self.reqnum)
 	self.command.write(str(self.reqnum) + "\n")
 	self.ournum = self.reqnum
 	self.reqnum += 1
@@ -48,7 +46,6 @@ class VisProc:
 
     def poll_req(self, num):
 	#Have we had a response for req 'num'?
-	print "dix"
 	for req in self.reqlist:
 	    if req.num == num:
 		return req
@@ -62,13 +59,13 @@ class VisProc:
                     
             self.text += os.read(self.fifo, 1)
 
-	if self.text[-6:] != "BLOBS\n":
+	if self.text.find("BLOBS\n") == -1 :
 	    #Not at the end yet
-	    #FIXME: and if we return more than one?
 	    return None
 
-	self.text = self.text[:-6]
-        lines = self.text.strip().split('\n')
+	strlist = self.text.split("BLOBS\n", 1)
+	self.text = strlist[1]
+        lines = strlist[0].strip().split('\n')
      
         if len(lines) == 0:
             logging.error("hueblobs returned nothing")
@@ -77,12 +74,10 @@ class VisProc:
 	    reqtext.rstrip('\n')
 
             event = VisionEvent()
-	    print reqtext
 	    event.num = int(reqtext)
             for line in lines:
                 if line != "":
                     info = line.split(",")
-		    print "blob at " + str(info[0]) + " " + str(info[1])
                     event.addblob(info[0], info[1], info[2], info[3], info[4],
                             info[5])
 
