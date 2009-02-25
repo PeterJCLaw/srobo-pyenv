@@ -4,7 +4,7 @@ import time
 import subprocess
 import logging
 from events import Event
-from poll import Poll
+import poll
 
 class VisionEvent(Event):
     class Blob:
@@ -91,9 +91,9 @@ class VisProc:
 print "Starting vision system"
 vis_proc = VisProc()
 
-class vision(Poll):
+class vision(poll.Poll):
     def __init__(self):
-	Poll.__init__(self)
+	poll.Poll.__init__(self)
 	self.our_req_num = vis_proc.make_req()
 
     def eval(self):

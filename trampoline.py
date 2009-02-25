@@ -7,7 +7,7 @@ except:
     pass
 import addhack
 import time_event
-from poll import Poll
+from poll import Poll, TimePoll
 
 class Coroutine:
     def __init__(self, generator, name = ""):
@@ -78,7 +78,7 @@ class Coroutine:
                 if result.__class__ == types.GeneratorType:
                     self.polls.append(result)
                 elif isinstance(result, int) or isinstance(result, float):
-                    self.polls.append( time_event.TimePoll(result) )
+                    self.polls.append( TimePoll(result) )
                 elif isinstance(result,Poll):
                     self.polls.append(result)
                 else:
@@ -93,8 +93,7 @@ def sync():
         subprocess.Popen("sync").wait()
 
 class Trampoline:
-    def __init__(self, corner=0, colour=0, game=0):
-        self.corner = corner
+    def __init__(self, colour=0, game=0):
         self.colour = colour
         self.game = game
 
@@ -106,9 +105,8 @@ class Trampoline:
         coroutines = []
 
         # Call the main function
-        coroutines.append( Coroutine( robot.main(corner=self.corner,
-                                                 colour=self.colour,
-                                                 game=self.game),
+        coroutines.append( Coroutine( robot.main( colour=self.colour,
+                                                  game=self.game ),
                                       name = "main" ) )
 
         # sync to disk every 5 seconds:

@@ -27,7 +27,6 @@ try:
     import trampoline
     print "Trampoline imported"
 
-    corner = 0
     colour = 0
     game = 0
 
@@ -38,8 +37,7 @@ try:
         time.sleep(0.5)
     
 
-    t = trampoline.Trampoline( corner = corner,
-                               colour = colour,
+    t = trampoline.Trampoline( colour = colour,
                                game = game )
     print "Trampoline initialised"
 
