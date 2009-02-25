@@ -108,6 +108,28 @@ class IOGreaterThan(IOOperator):
 
     def __str__(self):
         return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
+
+class IOLessThanOrEqual(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        m = self.operands[1].val()
+        if n <= m:
+            return IOEvent(100)
+        return
+
+    def __str__(self):
+        return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
+
+class IOGreaterThanOrEqual(IOOperator):
+    def eval(self):
+        n = self.operands[0].val()
+        m = self.operands[1].val()
+        if n >= m:
+            return IOEvent(100)
+        return
+
+    def __str__(self):
+        return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
     
 class IOPoll(poll.Poll):
     def __init__(self):
@@ -127,6 +149,12 @@ class IOPoll(poll.Poll):
 
     def __ne__(self,o):
         return IONotEqual( self, o )
+
+    def __le__(self,o):
+        return IOLessThanOrEqual( self, o )
+
+    def __ge__(self,o):
+        return IOGreaterThanOrEqual( self, o )
 
 class Pin(IOPoll):
     def __init__(self, num):
