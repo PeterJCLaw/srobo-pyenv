@@ -233,7 +233,7 @@ class AnaloguePins:
     ######## Container Operators ########
     def __getitem__(self, n):
         "Return value of the pin"
-        return readapin(n)
+        return AnaloguePin(n)
 
     def __setitem__(self, n, v):
         "Set the output"
