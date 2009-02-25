@@ -21,16 +21,7 @@ CMD_RTS = 0x0d
 CMD_CTS = 0x0e
 CMD_XBE = 0x0f
 
-# def checkpower():
-#     try:
-#         getfirmware(ADDRESS)
-#         return True
-#     except c2py.I2CError:
-#         return False
-
-# def getfirmware():
-#     return c2py.readworddata(ADDRESS, CMD_GET_FIRMWARE, 1)
-
+#functions commented out are correct but currently unusable due to firmware constraints, this will be addressed shortly
 def setleds(led,val):
     temp = powerread(ADDRESS, CMD_LED)[0]
     temp = temp & ~(1<<led)
@@ -43,14 +34,6 @@ def setleds(led,val):
 def getleds(led):
     return (((powerread(ADDRESS, CMD_LED)[0])&(1<<led))>>led)
 
-
-# def getbattery():
-#     return getword(ADDRESS, CMD_GET_BATTERY) & 0x3FF
-
-# def getcurrent():
-#     return getword(ADDRESS, CMD_GET_CURRENT) & 0x3FF
-
-
 def getswitches(switch):
     return ((powerread(ADDRESS, CMD_DIPSWITCH)[0] & (1<<switch))>>switch)
 
@@ -60,8 +43,8 @@ def getbutton():
 
 def setbutton():
     while True:
-        powerwrite(ADDRESS,CMD_LED,[])
-        if 0 == powerread(ADDRESS, CMD_LED)[0]:
+        powerwrite(ADDRESS,CMD_BUTTON,[0])
+        if 0 == powerread(ADDRESS, CMD_BUTTON)[0]:
             break
 
 def slugpoweroff():
@@ -72,47 +55,48 @@ def slugpoweroff():
 def setservopower(val):
     while True:
         powerwrite(ADDRESS,CMD_SERVO_POWER,[val])
-        if powerread(ADDRESS,CMD_SERVO_POWER)==val:
+        if powerread(ADDRESS,CMD_SERVO_POWER)[0]==val:
             break
 
 def getservopower():
-    return powerread(ADDRESS,CMD_SERVO_POWER)
+    return powerread(ADDRESS,CMD_SERVO_POWER)[0]
 
 
 
 def setmotorpower(val):
     while True:
         powerwrite(ADDRESS,CMD_MOTOR_POWER,[val])
-        if powerread(ADDRESS,CMD_MOTOR_POWER)==val:
+        if powerread(ADDRESS,CMD_MOTOR_POWER)[0]==val:
             break
 
 def getmotorpower():
-    return powerread(ADDRESS,CMD_MOTOR_POWER)
+    return powerread(ADDRESS,CMD_MOTOR_POWER)[0]
 
 
 def clearwatchdog():
     while True:
         powerwrite(ADDRESS,CMD_BEEGEES,[1])
-        if powerread(ADDRESS,CMD_BEEGEES)==1:
+        if powerread(ADDRESS,CMD_BEEGEES)[0]==1:
             break
 
 def getxbects():
-    return powerread(ADDRESS,CMD_CTS)
+    return powerread(ADDRESS,CMD_CTS)[0]
 
 def getxbrts():
-    return powerread(ADDRESS,CMD_RTS)
+    return powerread(ADDRESS,CMD_RTS)[0]
 
-def setxbrts(val):
-    while True:
-        powerwrite(ADDRESS,CMD_RTS,[val])
-        if powerread(ADDRESS,CMD_RTS)==val:
-            break
+# def setxbrts(val):
+#     while True:
+#         powerwrite(ADDRESS,CMD_RTS,[val])
+#         if powerread(ADDRESS,CMD_RTS)[0]==val:
+#             break
 
-def getxb():
-    return powerread(ADDRESS,CMD_XBE)
+# def getxb():
+#     return powerread(ADDRESS,CMD_XBE)[0]
 
-def setxb(val):
-    while True:
-        powerwrite(ADDRESS,CMD_XBE,[val])
-        if powerread(ADDRESS,CMD_XBE)==val:
-            break
+# def setxb(val):
+#     while True:
+#         powerwrite(ADDRESS,CMD_XBE,[val])
+#         if powerread(ADDRESS,CMD_XBE)[0]==val:
+#             break
+
