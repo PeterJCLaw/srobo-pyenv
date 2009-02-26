@@ -94,7 +94,7 @@ vis_proc = VisProc()
 
 class vision(poll.Poll):
     def __init__(self):
-	poll.Poll.__init__(self)
+	poll.Poll.__init__(self, vision)
 	self.our_req_num = vis_proc.make_req()
 
     def eval(self):
