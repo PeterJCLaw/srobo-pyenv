@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys, logging, os, os.path, subprocess, select, time
+import games, colours
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -27,8 +28,8 @@ try:
     import trampoline
     print "Trampoline imported"
 
-    colour = 0
-    game = 0
+    colour = colours.RED
+    game = games.GOLF
 
     while not power.getbutton():
         power.setleds(0,1)

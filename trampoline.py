@@ -8,6 +8,8 @@ except:
 import addhack
 import time_event
 from poll import Poll, TimePoll
+from games import *
+from colours import *
 
 class Coroutine:
     def __init__(self, generator, name = ""):
@@ -93,7 +95,7 @@ def sync():
         subprocess.Popen("sync").wait()
 
 class Trampoline:
-    def __init__(self, colour=0, game=0):
+    def __init__(self, colour=RED, game = GOLF):
         self.colour = colour
         self.game = game
 

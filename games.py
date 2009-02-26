@@ -1,0 +1,2 @@
+GOLF = "golf"
+SQUIRREL = "squirrel"

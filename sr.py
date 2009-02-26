@@ -11,3 +11,5 @@ from trampoline import coroutine
 from time_event import timeout
 
 from power import setleds, getleds
+from games import GOLF, SQUIRREL
+

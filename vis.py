@@ -5,6 +5,7 @@ import subprocess
 import logging
 from events import Event
 import poll
+from colours import *
 
 class VisionEvent(Event):
     class Blob:
