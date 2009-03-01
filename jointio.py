@@ -22,10 +22,25 @@ JOINTIO_INPUT_DIG = 4
 
 iosens = [0, 1, 2, 3]
 
+class IOEventInfo:
+    def __init__(self):
+        self.pins = []
+        self.vals = {}
+
 class IOEvent(Event):
-    def __init__(self, events):
+    def __init__(self, pvals):
+        "pvals is a dict of relevant pins and values"
         Event.__init__(self, io)
-        self.pins = events
+        self.pvals = pvals
+
+    def add_info(self, ev):
+        if not hasattr(ev, "io"):
+            ev.io = IOEventInfo()
+
+        for pin, val in self.pvals.iteritems():
+            if pin not in ev.io.pins:
+                ev.io.pins.append(pin)
+            ev.io.vals[pin] = val
 
 class InvalidPin(Exception):
     def __init__(self, value):
@@ -65,13 +80,24 @@ class IOOperator(poll.Poll):
         "For when the operation gets casted into a bool"
         return self.eval() != None
 
+    def gen_event(self, vals):
+        pvals = {}
+        for i in xrange(0, len(vals)):
+            p = self.operands[i]
+            if isinstance(p, Pin) or isinstance(p, AnaloguePin):
+                pvals[ p.num ] = vals[i]
+        return pvals
+
 class IOEqual(IOOperator):
     def eval(self):
         n = self.operands[0].val()
+        vals = [n]
         for op in self.operands[1:]:
-            if n != op.val():
+            v = op.val()
+            if n != v:
                 return
-        return IOEvent(100)
+            vals.append(v)
+        return IOEvent(self.gen_event(vals))
 
     def __str__(self):
         return "IOEqual(%s)" % (" == ".join([str(x) for x in self.operands]))
@@ -82,7 +108,7 @@ class IONotEqual(IOOperator):
         m = self.operands[1].val()
         if n == m:
             return
-        return IOEvent(100)
+        return IOEvent(self.gen_event([n,m]))
 
     def __str__(self):
         return "IONotEqual(%s)" % (" != ".join([str(x) for x in self.operands]))
@@ -92,7 +118,7 @@ class IOLessThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n < m:
-            return IOEvent(100)
+            return IOEvent(self.gen_event([n,m]))
         return
 
     def __str__(self):
@@ -103,7 +129,7 @@ class IOGreaterThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n > m:
-            return IOEvent(100)
+            return IOEvent(self.gen_event([n,m]))
         return
 
     def __str__(self):
@@ -114,7 +140,7 @@ class IOLessThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n <= m:
-            return IOEvent(100)
+            return IOEvent(self.gen_event([n,m]))
         return
 
     def __str__(self):
@@ -125,7 +151,7 @@ class IOGreaterThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n >= m:
-            return IOEvent(100)
+            return IOEvent(self.gen_event([n,m]))
         return
 
     def __str__(self):
@@ -168,7 +194,7 @@ class Pin(IOPoll):
         v = self.val()
         if v != self.ival:
             self.ival = v
-            return IOEvent(self.num)
+            return IOEvent({self.num: v})
         return None
 
     def __repr__(self):
@@ -212,8 +238,9 @@ class AnaloguePin(IOPoll):
         IOPoll.__init__(self)
 
     def eval(self):
-        if self.val() != self.ival:
-            return IOEvent(self.num)
+        v = self.val()
+        if v != self.ival:
+            return IOEvent({self.num: v})
         return None
 
     def __eq__(self,o):

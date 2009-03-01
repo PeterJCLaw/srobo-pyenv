@@ -11,6 +11,35 @@ from poll import Poll, TimePoll
 from games import *
 from colours import *
 
+class EventInfo:
+    def __init__(self, evtree):
+        self.evtree = evtree
+        self.pop_tree()
+
+    def __eq__(self, obj):
+        def ev_cmp(e):
+            if isinstance(e, list):
+                for x in e:
+                    if ev_cmp(x):
+                        return True
+                return False
+            else:
+                return e == obj
+
+        return ev_cmp(self.evtree)
+
+    def pop_tree(self):
+        def add_events(ev):
+            if isinstance(ev, list):
+                for e in ev:
+                    add_events(e)
+            else:
+                ev.add_info(self)
+
+        # Recusively add events :-O
+        if self.evtree != None:
+            add_events(self.evtree)
+
 class Coroutine:
     def __init__(self, generator, name = ""):
         self.name = name
@@ -19,6 +48,10 @@ class Coroutine:
         self.polls = []
         self.stack = [generator]
         self.event = None
+
+    def configure_event(self):
+        "Configure robot.event to represent the last event"
+        robot.event = EventInfo(self.event)
 
     def poll(self):
         "Call poll functions."
@@ -57,7 +90,7 @@ class Coroutine:
 
         self.first_run = False
 
-        robot.event = self.event
+        self.configure_event()
         results = self.stack[-1].next()
         self.event = None
 

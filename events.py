@@ -11,3 +11,6 @@ class Event:
         else:
             return NotImplemented
 
+    def add_info(self, event):
+        """Adds information to the event class supplied."""
+        pass
