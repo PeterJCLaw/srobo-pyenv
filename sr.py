@@ -1,4 +1,4 @@
-from motor import setpower, readpower
+from motor import setpower, readpower, motor
 
 from vis import *
 from pwm import *
