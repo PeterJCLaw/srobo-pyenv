@@ -31,6 +31,9 @@ def setleds(led,val):
         if temp == powerread(ADDRESS, CMD_LED)[0]:
             break
 
+# This function is actually called setled in our public API
+setled = setleds
+
 def getleds(led):
     return (((powerread(ADDRESS, CMD_LED)[0])&(1<<led))>>led)
 
@@ -100,3 +103,17 @@ def getxbrts():
 #         if powerread(ADDRESS,CMD_XBE)[0]==val:
 #             break
 
+class PowerLeds:
+    def __getitem__(self, n):
+        "Return current state of the LED"
+        return getleds(n)
+
+    def __setitem__(self, n, v):
+        "Set the state of the LED"
+        setleds(n,v)
+
+class Power:
+    def __init__(self):
+        self.led = PowerLeds()
+
+power = Power()
