@@ -18,7 +18,7 @@ class VisionEvent(Event):
             self.height = int(height)
     
     def __init__(self):
-        Event.__init__(self)
+        Event.__init__(self, vision)
         self.blobs = []
 
     def addblob(self, x, y, width, height, mass, colour):
@@ -94,9 +94,8 @@ vis_proc = VisProc()
 
 class vision(poll.Poll):
     def __init__(self):
-	poll.Poll.__init__(self, vision)
+	poll.Poll.__init__(self)
 	self.our_req_num = vis_proc.make_req()
 
     def eval(self):
 	return vis_proc.poll_req(self.our_req_num)
-
