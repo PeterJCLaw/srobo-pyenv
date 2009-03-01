@@ -9,9 +9,9 @@ from colours import *
 
 class VisionEvent(Event):
     class Blob:
-        def __init__(self, centrex, centrey, width, height, mass, colour):
-            self.centrex = float(centrex) / 3.2
-            self.centrey = float(centrey) / 2.4
+        def __init__(self, x, y, width, height, mass, colour):
+            self.x = float(y) / 3.2
+            self.y = float(y) / 2.4
             self.mass = int(mass)
             self.colour = int(colour)
             self.width = int(width)
@@ -21,8 +21,8 @@ class VisionEvent(Event):
         Event.__init__(self)
         self.blobs = []
 
-    def addblob(self, centrex, centrey, width, height, mass, colour):
-        self.blobs.append(self.Blob(centrex, centrey, width, height, mass, colour))
+    def addblob(self, x, y, width, height, mass, colour):
+        self.blobs.append(self.Blob(x, y, width, height, mass, colour))
 
 class VisProc:
     def __init__(self):
