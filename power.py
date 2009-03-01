@@ -39,6 +39,8 @@ setled = setleds
 def getleds(led):
     return (((powerread(ADDRESS, CMD_LED)[0])&(1<<led))>>led)
 
+getled = getleds
+
 def getswitches(switch):
     return ((powerread(ADDRESS, CMD_DIPSWITCH)[0] & (1<<switch))>>switch)
 
