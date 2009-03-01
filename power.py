@@ -1,5 +1,7 @@
 #import c2py
 from repeat import *
+from jointio import IOPoll
+from events import Event
 
 ADDRESS = 0x4f # 4F is the second generation address
 
@@ -112,8 +114,42 @@ class PowerLeds:
         "Set the state of the LED"
         setleds(n,v)
 
+power_switch = "power_switch event"
+
+class PowerEvent(Event):
+    def __init__(self, events):
+        Event.__init__(self, power_switch)
+        self.switches = events
+
+class PowerSwitch(IOPoll):
+    def __init__(self, num):
+        self.num = num
+        self.ival = self.val()
+
+    def eval(self):
+        if self.val() != self.ival:
+            return PowerEvent(self.num)
+        return None
+
+    def val(self):
+        return getswitches(self.num)
+
+    def __repr__(self):
+        return "%i" % self.val()
+
+    def __str__(self):
+        return "%i" % self.val()
+
+    def __nonzero__(self):
+        return bool(self.val())
+
+class PowerSwitches:
+    def __getitem__(self, n):
+        return PowerSwitch(n)
+
 class Power:
     def __init__(self):
         self.led = PowerLeds()
+        self.switch = PowerSwitches()
 
 power = Power()
