@@ -1,6 +1,7 @@
 from motor import setpower, readpower, motor
 
-from vis import *
+from vis import vision
+from colours import *
 from pwm import *
 import logging
 

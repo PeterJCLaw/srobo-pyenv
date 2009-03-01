@@ -7,6 +7,9 @@ from events import Event
 import poll
 from colours import *
 
+class VisionStruct:
+    pass
+
 class VisionEvent(Event):
     class Blob:
         def __init__(self, x, y, width, height, mass, colour):
@@ -20,6 +23,11 @@ class VisionEvent(Event):
     def __init__(self):
         Event.__init__(self, vision)
         self.blobs = []
+
+    def add_info(self, ev):
+        if not hasattr(ev, "vision"):
+            ev.vision = VisionStruct()
+        ev.vision.blobs = self.blobs
 
     def addblob(self, x, y, width, height, mass, colour):
         self.blobs.append(self.Blob(x, y, width, height, mass, colour))
