@@ -207,29 +207,6 @@ class Pin(IOPoll):
     def val(self):
         return readpin(self.num)
 
-class OutputPin(IOPoll):
-    def __init__(self, num):
-        "num is the pin number we're dealing with"
-        self.num = num
-        # Initial value
-        self.ival = self.val()
-        IOPoll.__init__(self)
-
-    def eval(self):
-        if self.val() != self.ival:
-            return IOEvent(self.num)
-        return None
-
-    def __repr__(self):
-        return "%i" % readpin(self.num)
-
-    def __str__(self):
-        return "Pin(%i)" % self.num
-
-    def val(self):
-        return readpin(self.num)
-
-
 class AnaloguePin(IOPoll):
     def __init__(self, num):
         "num is the pin number we're dealing with"
