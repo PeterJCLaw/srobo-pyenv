@@ -45,7 +45,7 @@ def convert_polls(polls):
         if hasattr( poll, "eval" ):
             res.append(poll)
         elif isinstance( poll, int ) or isinstance( poll, float ):
-            res.append( time_event.TimePoll(poll) )
+            res.append( TimePoll(poll) )
         else:
             print "Failed to convert \"%s\" into poll." % str(poll)
     return res
