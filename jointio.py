@@ -202,7 +202,6 @@ class Pin(IOPoll):
 
     def __str__(self):
         return str(readpin(self.num))
-#        return "Pin(%i)" % self.num
 
     def val(self):
         return readpin(self.num)
