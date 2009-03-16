@@ -2,7 +2,7 @@ from motor import setpower, readpower, motor
 
 from vis import vision
 from colours import *
-from pwm import *
+from pwm import pwm, setpos, readpos
 import logging
 
 from poll import And, Or, TimePoll

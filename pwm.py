@@ -43,3 +43,12 @@ def setpos( s, pos ):
 			status[s] = pos
 			break	
 
+class Pwm:
+	def __getitem__(self, n):
+		"Return the named servo's position"
+		return readpos(n)
+
+	def __setitem__(self, n, v):
+		setpos(n, v)
+
+pwm = Pwm()
