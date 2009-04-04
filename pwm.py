@@ -5,7 +5,7 @@ ADDRESS = 0x2E
 
 PWM_CMD_SET = 1
 PWM_CMD_GET_LAST = 2
-
+LCD_SCREEN_STRING = 8
 status = [-1, -1, -1, -1, -1, -1]
 
 def readpos( s ):                                                                              
@@ -43,6 +43,21 @@ def setpos( s, pos ):
 			status[s] = pos
 			break	
 
+def setlcd(screen, text):
+	"""Write upto 32 characters of text to the lcd"""
+
+	if screen not in [0, 1, 2, 3]:
+		screen = 0;
+
+	text = list(text[0:33])	#curtail
+	vals = [ord(' ')]*33
+	i = 0
+	while(i < 32):
+		vals[i] = ord(text[i])
+		i += 1
+
+	powerwrite(ADDRESS, LCD_SCREEN_STRING, list(vals));
+	
 class Pwm:
 	def __getitem__(self, n):
 		"Return the named servo's position"
