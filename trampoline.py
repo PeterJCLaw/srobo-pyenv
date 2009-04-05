@@ -91,7 +91,21 @@ class Coroutine:
         self.first_run = False
 
         self.configure_event()
-        results = self.stack[-1].next()
+
+        #Run the command on the top of the stack
+        #If the generator is done, try the next one
+        #If there are no generators, throw a StopIteration
+        while True:
+            try:
+                results = self.stack[-1].next()
+                break
+            except StopIteration:
+                #Remove the current function from the stack
+                self.stack.pop()
+                if len(self.stack) == 0:
+                    #This coroutine has finished completely
+                    raise StopIteration
+
         self.event = None
 
         if isinstance(results, types.TupleType):
@@ -107,7 +121,9 @@ class Coroutine:
         if results[0].__class__ == types.FunctionType:
             #Push the function onto the stack
             #Passing the rest of the yield as arguments
-            self.stack.append(args[0](*args[1:]))
+            self.stack.append(results[0](*results[1:]))
+            self.first_run = True
+            self.proc()
         else:
             for result in results:
                 if result.__class__ == types.GeneratorType:
