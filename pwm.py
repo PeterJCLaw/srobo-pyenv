@@ -88,7 +88,6 @@ def setlcd(*args):
 			break
 
 class Pwm:
-
 	def __getitem__(self, n):
 		"Return the named servo's position"
 		return readpos(n)
