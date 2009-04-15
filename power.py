@@ -107,6 +107,26 @@ def getxbrts():
 #         if powerread(ADDRESS,CMD_XBE)[0]==val:
 #             break
 
+def xbee_reset(v):
+    """Set the XBee reset line.
+    v should be True to hold the XBee in reset"""
+    if v:
+        v = 0
+    else:
+        v = 1
+
+    while True:
+        powerwrite(ADDRESS,CMD_XBE,[v])
+        r = powerread(ADDRESS,CMD_XBE)[0]
+
+        if r:
+            r = 1
+        else:
+            r = 0
+
+        if r==v:
+            break
+
 class PowerLeds:
     def __getitem__(self, n):
         "Return current state of the LED"

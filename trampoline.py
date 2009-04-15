@@ -5,6 +5,7 @@ try:
     import robot
 except:
     pass
+
 import addhack
 import time_event
 from poll import Poll, TimePoll
@@ -155,15 +156,9 @@ class Trampoline:
         """
         coroutines = []
 
-        # Call the main function
-        coroutines.append( Coroutine( robot.main( colour=self.colour,
-                                                  game=self.game ),
-                                      name = "main" ) )
-
         # sync to disk every 5 seconds:
         coroutines.append( Coroutine( sync(), name = "sync" ) )
 
-        # TODO: Find coroutines in the user code (Trac #300)
         robot.event = None
 
         while True:
@@ -187,16 +182,9 @@ class Trampoline:
                 c.poll()
 
             # Add new coroutines into the mix:
-            for c in addhack.new_coroutines:
-                coroutines.append( Coroutine(c) )
-            addhack.new_coroutines = []
-
-def coroutine(f):
-    "Decorator to add a function as a coroutine "
-    addhack.add_coroutine(f)
-
-    # Don't modify the function
-    return f
+            for c in addhack.get_coroutines():
+                coroutines.append( Coroutine( c[0](*c[1],**c[2]) ) )
+            addhack.clear_coroutines()
 
 if __name__ == "__main__":
     import sys, os, os.path

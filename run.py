@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import sys, logging, os, os.path, subprocess, select, time
 import games, colours
+import mainc
+from addhack import add_coroutine
+import power
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -22,30 +25,26 @@ try:
     import jointio, motor, pwm, vis, c2py, power
     print "Peripheral libraries imported"
     
-    import robot
-    print "User robot code import succeeded"
-
     import trampoline
     print "Trampoline imported"
 
-    colour = colours.RED
-    game = games.GOLF
+    print "Starting xbd, the radio server"
+    # Reset the XBee
+    power.xbee_reset(True)
+    power.xbee_reset(False)
 
-    while not power.getbutton():
-        power.setleds(0,1)
-        time.sleep(0.5)
-        power.setleds(0,0)
-        time.sleep(0.5)
-    power.setbutton()
-    power.setservopower(1)
-    power.setmotorpower(1)
-    
+    # Start xbd
+    xblog = open("xbd-log.txt","at")
+    subprocess.Popen(["./xbd",
+                      "-s", "/dev/ttyS0",
+                      "-b","57600",
+                      "--init-baud", "9600"],
+                     stdout = xblog, stderr = xblog )
 
-    t = trampoline.Trampoline( colour = colour,
-                               game = game )
-    print "Trampoline initialised"
+    t = trampoline.Trampoline()
+    add_coroutine( mainc.button_monitor )
+    add_coroutine( mainc.xbee_monitor )
 
-    
     print "Starting trampoline"
     t.schedule()
 except:
