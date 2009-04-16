@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import sys, logging, os, os.path, subprocess, select, time
 import games, colours
-import mainc
+import radio
 from addhack import add_coroutine
 import power
 
@@ -42,8 +42,7 @@ try:
                      stdout = xblog, stderr = xblog )
 
     t = trampoline.Trampoline()
-    add_coroutine( mainc.button_monitor )
-    add_coroutine( mainc.xbee_monitor )
+    add_coroutine( radio.xbee_monitor )
 
     print "Starting trampoline"
     t.schedule()
