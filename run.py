@@ -1,22 +1,20 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, subprocess, select, time, traceback
+import sys, logging, os, os.path, subprocess, select, time
+import games, colours
+import radio
+from addhack import add_coroutine
+import power
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    stream = sys.stdout)
+
+sys.stderr = sys.stdout = open("log.txt", "at")
+
+os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
+
+print "Initialising trampoline..."
 try:
-    from debug import DebugOutput
-    sys.stderr = sys.stdout = DebugOutput("log.txt")
-
-    import games, colours
-    import radio
-    from addhack import add_coroutine
-    import power
-
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(levelname)s %(message)s',
-                        stream = sys.stdout)
-
-    os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
-
-    print "Initialising trampoline..."
     import fw
     fw.update_all()    
 
@@ -51,4 +49,6 @@ try:
 except:
     print "Could not load user code!"
     print "Error: "
-    traceback.print_exc(file=sys.stderr)
+    print sys.exc_info()[0]
+    print sys.exc_info()[1]
+    print "On line", sys.exc_info()[2].tb_lineno
