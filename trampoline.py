@@ -1,13 +1,11 @@
 import subprocess, sys
 import types
 import logging
-try:
-    import robot
-except:
-    pass
+
+import robot
 
 import addhack
-import time_event
+from time_event import TimeoutEvent
 from poll import Poll, TimePoll
 from games import *
 from colours import *
@@ -78,10 +76,7 @@ class Coroutine:
         self.polls = [x for x in self.polls if x != None]
 
         if len(self.polls) == 0:
-            "This is an erroneous situation"
-            print "OMG PONIES ERROR: No polls left for coroutine '%s' :-S" % self.name
-            print "Forging TimeoutEvent as a hack until someone knows how to handle this condition"
-            this.event = TimeoutEvent(1)
+            self.event = TimeoutEvent(1)
 
     def proc(self):
         "Call the generator and get new polls."
@@ -116,7 +111,6 @@ class Coroutine:
 
         if results == [None]:
             # Function returned or yielded nothing
-            print "WARNING: Coroutine yielded absolutely nothing -- this is kind of strange..."
             return
 
         if results[0].__class__ == types.FunctionType:
