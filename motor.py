@@ -15,6 +15,27 @@ FORWARD = 1
 BACKWARD = 2
 BRAKE = 3
 
+def reg_read( reg, l ):
+    """Read a motor controller register.
+    reg is the register number.
+    l is the length of the register in byte.
+    Returns array of received bytes."""
+    while True:
+        try:
+            r = c2py.motor_reg_read( ADDRESS, reg, l )
+            break
+        except c2py.I2CError:
+            pass
+    return r
+
+def reg_write( reg, data ):
+    while True:
+        try:
+            c2py.motor_reg_write( ADDRESS, reg, data )
+            break
+        except c2py.I2CError:
+            pass
+
 def checkmotor():
     try:
         id = c2py.readworddata( ADDRESS, MOTOR_GET0, 1 )
