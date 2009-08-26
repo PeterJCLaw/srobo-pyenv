@@ -1,5 +1,6 @@
 import c2py
-from repeat import *
+from events import Event
+import poll
 # Whether to display i2c debug info
 DEBUG_I2C = False
 
@@ -174,8 +175,25 @@ class PIDController:
         self.cmds.PID_KI.write( ki )
         self.cmds.PID_KD.write( kd )
 
-class Motor:
+class MotorEventInfo:
+    def __init__(self):
+        self.channels = []
+
+class MotorEvent(Event):
     def __init__(self, channel):
+        Event.__init__(self, motor)
+        self.channel = channel
+
+    def add_info(self, ev):
+        if not hasattr(ev, "motor"):
+            ev.motor = MotorEventInfo()
+        if self.channel not in ev.motor.channels:
+            ev.motor.channels.append( self.channel )
+
+class Motor(poll.Poll):
+    def __init__(self, channel):
+        poll.Poll.__init__(self)
+
         self.channel = channel
         self.cmds = CMD[channel]
 
@@ -193,6 +211,11 @@ class Motor:
 
     def getpos(self):
         return self.cmds.CONTROL_LAST_POS.read()
+
+    def eval(self):
+        "The poll eval function"
+        if self.getpos() == self.target:
+            return MotorEvent(self.channel)
 
     def __setattr__(self, n, v):
         if n == "sensor":
