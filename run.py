@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, subprocess, select, time
+import sys, logging, os, os.path, subprocess, select, time, traceback
 import games, colours
 import radio
 from addhack import add_coroutine
@@ -49,6 +49,4 @@ try:
 except:
     print "Could not load user code!"
     print "Error: "
-    print sys.exc_info()[0]
-    print sys.exc_info()[1]
-    print "On line", sys.exc_info()[2].tb_lineno
+    traceback.print_exc(file=sys.stderr)
