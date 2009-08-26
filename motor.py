@@ -138,13 +138,14 @@ class CommandSet:
         ## Control loop:
         self.CONTROL_ENABLED = Command( control+0, TYPE_BOOL )
         self.CONTROL_TARGET = Command( control+1, TYPE_I32 )
+        self.CONTROL_LAST_POS = Command( control+2, TYPE_I32 )
         # Speed
-        self.CONTROL_SPEED_ENABLED = Command( control+2, TYPE_BOOL )
-        self.CONTROL_SPEED_INC = Command( control+3, TYPE_I16 )
-        self.CONTROL_SPEED_PERIOD = Command( control+4, TYPE_I16 )
+        self.CONTROL_SPEED_ENABLED = Command( control+3, TYPE_BOOL )
+        self.CONTROL_SPEED_INC = Command( control+4, TYPE_I16 )
+        self.CONTROL_SPEED_PERIOD = Command( control+5, TYPE_I16 )
         # Controller and sensor selection
-        self.CONTROL_CONTROLLER = Command( control+5, TYPE_U8 )
-        self.CONTROL_SENSOR = Command( control+6, TYPE_U8 )
+        self.CONTROL_CONTROLLER = Command( control+6, TYPE_U8 )
+        self.CONTROL_SENSOR = Command( control+7, TYPE_U8 )
 
 CMD = [ CommandSet(0), CommandSet(1) ]
 
@@ -189,6 +190,9 @@ class Motor:
 
     def disable(self):
         self.cmds.CONTROL_ENABLED.write(False)
+
+    def getpos(self):
+        return self.cmds.CONTROL_LAST_POS.read()
 
     def __setattr__(self, n, v):
         if n == "sensor":
