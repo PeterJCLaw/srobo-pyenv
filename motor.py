@@ -170,8 +170,8 @@ class PIDController:
 
     def set_coeff( self, kp, ki, kd ):
         self.cmds.PID_KP.write( kp )
-        self.cmds.PID_KI.write( kp )
-        self.cmds.PID_KD.write( kp )
+        self.cmds.PID_KI.write( ki )
+        self.cmds.PID_KD.write( kd )
 
 class Motor:
     def __init__(self, channel):
