@@ -36,14 +36,6 @@ def reg_write( reg, data ):
         except c2py.I2CError:
             pass
 
-def checkmotor():
-    try:
-        id = c2py.readworddata( ADDRESS, MOTOR_GET0, 1 )
-    except c2py.I2CError:
-        return False
-
-    return True
-
 def setpower_channel(channel, speed):
     speed = float(speed)
 
