@@ -1,4 +1,4 @@
-from motor import setpower, readpower, motor
+from motor import motor
 
 from vis import vision
 from colours import *
