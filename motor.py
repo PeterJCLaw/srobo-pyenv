@@ -178,10 +178,11 @@ class Motor:
         self.channel = channel
         self.cmds = CMD[channel]
 
+        self._state_loaded = False
         self._cur_sensor_attr = None
         self._cur_controller_attr = None
-        self.__dict__["sensor"] = None
-        self.__dict__["controller"] = None
+        self._sensor = None
+        self._controller = None
 
     def enable(self):
         self.cmds.CONTROL_ENABLED.write(True)
@@ -199,15 +200,64 @@ class Motor:
         else:
             self.__dict__[n] = v
 
+    def _load_state(self):
+        if self._state_loaded:
+            return
+
+        self._switch_sensor_n( self.cmds.CONTROL_SENSOR.read(), False )
+        self._switch_controller_n( self.cmds.CONTROL_CONTROLLER.read(), False )
+        self._state_loaded = True
+
+    def __getattr__(self, n):
+        if n in ["PID", "ads5030", "sensor", "controller"]:
+            # Time to discover what mode the motor controller is in:
+            self._load_state()
+
+        if n == "sensor":
+            return self._sensor
+        if n == "controller":
+            return self._controller
+
+        if self.__dict__.has_key( n ):
+            return self.__dict__[n]
+
+        raise AttributeError
+
+    def _switch_sensor_n(self, n, command = True):
+        # Called by __setattr__ -- careful.
+        prev = self._cur_sensor_attr
+
+        if n == SENSOR_NULL:
+            self._sensor = Motors.NULL
+            self.NULL = None
+            self._cur_sensor_attr = "NULL"
+
+        elif n == SENSOR_ADS5030:
+            self._sensor = Motors.ADS5030
+            self.ads5030 = ADS5030Sensor(self.channel)
+            self._cur_sensor_attr = "ads5030"
+
+        else:
+            raise "Invalid sensor requested"
+
+        if command:
+            self.cmds.CONTROL_SENSOR.write(n)
+
+        if prev != None and self._cur_sensor_attr != prev :
+            "Get rid of the old sensor's properties"
+            delattr(self, prev)
+
     def _set_target(self, t):
         # Called by __setattr__ -- careful.
+        self._load_state()
 
         if self._cur_controller_attr == "UNITY":
-            # Max is 100, min is -100
-            if t > 100:
-                t = 100
-            elif t < -100:
-                t = -100
+            # Scale -100 to 100 to -328 to 328
+            t = t * 3.28
+            if t > 328:
+                t = 328
+            elif t < -328:
+                t = -328
         
         t = int(t)
 
@@ -215,55 +265,44 @@ class Motor:
         self.__dict__["target"] = t
 
     def _switch_sensor(self, v):
-        # Called by __setattr__ -- careful.
-        prev = self._cur_sensor_attr
-
         if v == Motors.NULL:
-            self.__dict__["sensor"] = Motors.NULL
-            self.NULL = None
-            self._cur_sensor_attr = "NULL"
-            num = SENSOR_NULL
-
+            self._switch_sensor_n( SENSOR_NULL )
         elif v == Motors.ADS5030:
-            self.__dict__["sensor"] = Motors.ADS5030
-            self.ads5030 = ADS5030Sensor(self.channel)
-            self._cur_sensor_attr = "ads5030"
-            num = SENSOR_ADS5030
-
+            self._switch_sensor_n( SENSOR_ADS5030 )
         else:
             raise "Invalid sensor requested"
 
-        self.cmds.CONTROL_SENSOR.write(num)
-
-        if prev != None and self._cur_sensor_attr != prev :
-            "Get rid of the old sensor's properties"
-            delattr(self, prev)
-
-    def _switch_controller(self, v):
+    def _switch_controller_n(self, n, command = True):
         # Called by __setattr__ -- careful.
         prev = self._cur_controller_attr
 
-        if v == Motors.UNITY:
-            self.__dict__["controller"] = Motors.UNITY
+        if n == CONTROLLER_UNITY:
+            self._controller = Motors.UNITY
             self.UNITY = None
             self._cur_controller_attr = "UNITY"
-            num = CONTROLLER_UNITY
 
-        elif v == Motors.PID:
-            self.__dict__["controller"] = Motors.PID
+        elif n == CONTROLLER_PID:
+            self._controller = Motors.PID
             self.PID = PIDController(self.channel)
             self._cur_controller_attr = "PID"
-            num = CONTROLLER_PID
 
         else:
             raise "Invalid controller requested"
 
-        self.cmds.CONTROL_CONTROLLER.write(num)
+        if command:
+            self.cmds.CONTROL_CONTROLLER.write(n)
 
         if prev != None and self._cur_controller_attr != prev:
             "Get rid of the old controller's properties"
             delattr(self, prev)
 
+    def _switch_controller(self, v):
+        # Called by __setattr__ -- careful.
+
+        if v == Motors.UNITY:
+            self._switch_controller_n( CONTROLLER_UNITY )
+        elif v == Motors.PID:
+            self._switch_controller_n( CONTROLLER_PID )
 
 class Motors(list):
     # Sensor types
