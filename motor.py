@@ -244,6 +244,8 @@ class Motor(poll.Poll):
             return self._sensor
         if n == "controller":
             return self._controller
+        if n == "target":
+            return self.cmds.CONTROL_TARGET.read()
 
         if self.__dict__.has_key( n ):
             return self.__dict__[n]
