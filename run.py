@@ -73,7 +73,7 @@ try:
         print "Starting code"
         import addhack, robot
         addhack.add_queued()
-        addhack.add_coroutine( robot.main, games.GOLF, colours.RED )
+        addhack.add_coroutine( robot.main )
 
     print "Starting trampoline"
     t.schedule()

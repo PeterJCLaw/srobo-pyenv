@@ -14,9 +14,6 @@ def xbee_monitor():
     newc = list(addhack.get_coroutines())
     print "User robot code import succeeded"
 
-    colour = RED
-    game = GOLF
-
     led_state = 1
     x = XbeePoller()
     while True:
@@ -37,7 +34,7 @@ def xbee_monitor():
     power.setmotorpower(1)
 
     addhack.add_queued()
-    addhack.add_coroutine( robot.main, game, colour )
+    addhack.add_coroutine( robot.main )
 
 class XbeeStruct:
     pass
