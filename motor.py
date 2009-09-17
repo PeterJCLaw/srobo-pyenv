@@ -234,9 +234,10 @@ class Motor(poll.Poll):
         self._switch_sensor_n( self.cmds.CONTROL_SENSOR.read(), False )
         self._switch_controller_n( self.cmds.CONTROL_CONTROLLER.read(), False )
         self._state_loaded = True
+        self._target = self.cmds.CONTROL_TARGET.read()
 
     def __getattr__(self, n):
-        if n in ["PID", "ads5030", "sensor", "controller"]:
+        if n in ["PID", "ads5030", "sensor", "controller","target"]:
             # Time to discover what mode the motor controller is in:
             self._load_state()
 
@@ -245,7 +246,10 @@ class Motor(poll.Poll):
         if n == "controller":
             return self._controller
         if n == "target":
-            return self.cmds.CONTROL_TARGET.read()
+            t = self._target
+            if self._sensor == Motors.NULL:
+                t = t / 3.28
+            return t
 
         if self.__dict__.has_key( n ):
             return self.__dict__[n]
@@ -291,7 +295,7 @@ class Motor(poll.Poll):
         t = int(t)
 
         self.cmds.CONTROL_TARGET.write(t)
-        self.__dict__["target"] = t
+        self._target = t
 
     def _switch_sensor(self, v):
         if v == Motors.NULL:
