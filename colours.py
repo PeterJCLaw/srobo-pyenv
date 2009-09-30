@@ -1,4 +1,3 @@
-RED = 0
-YELLOW = 1
-GREEN = 2
-BLUE = 3
+RED = 1
+BLUE = 2
+GREEN = 3
