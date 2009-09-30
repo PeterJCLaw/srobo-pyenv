@@ -13,7 +13,7 @@ class VisionStruct:
 class VisionEvent(Event):
     class Blob:
         def __init__(self, x, y, width, height, mass, colour):
-            self.x = float(y) / 3.2
+            self.x = float(x) / 3.2
             self.y = float(y) / 2.4
             self.mass = int(mass)
             self.colour = int(colour)
