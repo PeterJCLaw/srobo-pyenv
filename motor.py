@@ -25,7 +25,7 @@ TYPE_ARR = { "type": ARRAY }
 
 # Types of sensors:
 SENSOR_NULL = 0
-SENSOR_ADS5030 = 1
+SENSOR_AS5030 = 1
 # Types of controllers:
 CONTROLLER_UNITY = 0
 CONTROLLER_PID = 1
@@ -131,10 +131,10 @@ class CommandSet:
         self.PID_KI = Command( controller+1, TYPE_I16 )
         self.PID_KD = Command( controller+2, TYPE_I16 )
 
-        # ADS5030 sensor
-        self.ADS5030_CLK = Command( sensor+0, TYPE_U8 )
-        self.ADS5030_DIO = Command( sensor+1, TYPE_U8 )
-        self.ADS5030_SHR = Command( sensor+2, TYPE_U8 )
+        # AS5030 sensor
+        self.AS5030_CLK = Command( sensor+0, TYPE_U8 )
+        self.AS5030_DIO = Command( sensor+1, TYPE_U8 )
+        self.AS5030_SHR = Command( sensor+2, TYPE_U8 )
 
         ## Control loop:
         self.CONTROL_ENABLED = Command( control+0, TYPE_BOOL )
@@ -150,7 +150,7 @@ class CommandSet:
 
 CMD = [ CommandSet(0), CommandSet(1) ]
 
-class ADS5030Sensor:
+class AS5030Sensor:
     def __init__(self, channel):
         self.channel = channel
         self.cmds = CMD[channel]
@@ -159,11 +159,11 @@ class ADS5030Sensor:
         if clk not in [0,1,2,3] or dio not in [0,1,2,3]:
             raise "clk and dio must be between 0 and 3 inclusive"
 
-        self.cmds.ADS5030_CLK.write( 1 << clk )
-        self.cmds.ADS5030_DIO.write( 1 << dio )
+        self.cmds.AS5030_CLK.write( 1 << clk )
+        self.cmds.AS5030_DIO.write( 1 << dio )
 
     def set_shr(self, shr):
-        self.cmds.ADS5030_SHR.write(shr)
+        self.cmds.AS5030_SHR.write(shr)
 
 class PIDController:
     def __init__(self, channel):
@@ -237,7 +237,7 @@ class Motor(poll.Poll):
         self._target = self.cmds.CONTROL_TARGET.read()
 
     def __getattr__(self, n):
-        if n in ["PID", "ads5030", "sensor", "controller","target"]:
+        if n in ["PID", "as5030", "sensor", "controller","target"]:
             # Time to discover what mode the motor controller is in:
             self._load_state()
 
@@ -265,10 +265,10 @@ class Motor(poll.Poll):
             self.NULL = None
             self._cur_sensor_attr = "NULL"
 
-        elif n == SENSOR_ADS5030:
-            self._sensor = Motors.ADS5030
-            self.ads5030 = ADS5030Sensor(self.channel)
-            self._cur_sensor_attr = "ads5030"
+        elif n == SENSOR_AS5030:
+            self._sensor = Motors.AS5030
+            self.as5030 = AS5030Sensor(self.channel)
+            self._cur_sensor_attr = "as5030"
 
         else:
             raise "Invalid sensor requested"
@@ -300,8 +300,8 @@ class Motor(poll.Poll):
     def _switch_sensor(self, v):
         if v == Motors.NULL:
             self._switch_sensor_n( SENSOR_NULL )
-        elif v == Motors.ADS5030:
-            self._switch_sensor_n( SENSOR_ADS5030 )
+        elif v == Motors.AS5030:
+            self._switch_sensor_n( SENSOR_AS5030 )
         else:
             raise "Invalid sensor requested"
 
@@ -340,7 +340,7 @@ class Motor(poll.Poll):
 class Motors(list):
     # Sensor types
     NULL = "null sensor"
-    ADS5030 = "ads5030 sensor"
+    AS5030 = "as5030 sensor"
 
     # Controller types:
     UNITY = "unity controller"
