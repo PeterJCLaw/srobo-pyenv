@@ -31,11 +31,15 @@ CONTROLLER_UNITY = 0
 CONTROLLER_PID = 1
 
 class Command:
-    def __init__(self, reg, rtype, rlen = None, ro = False):
+    def __init__(self, reg, rtype, 
+                 rlen = None,
+                 ro = False,
+                 split_bits = False ):
         self.reg = reg
         self.rtype = rtype
         self.len = rlen
         self.ro = ro
+        self.split_bits = split_bits
 
     def read(self):
         if self.rtype["type"] == INTEGER:
@@ -55,6 +59,18 @@ class Command:
                     "Most significant bit set -- needs sign extending"
                     # In python, -1 is an infinite string of '1' bits
                     val |= -1 << (len(d)*8)
+            elif self.split_bits:
+                "Split the bits up into a list"
+                bits = []
+                for n in range(0, self.rtype["len"] * 8 ):
+                    v = val & 1 << n
+                    if v:
+                        v = 1
+                    else:
+                        v = 0
+                    bits.append(v)
+                bits.reverse()
+                val = bits
 
             return val
 
@@ -125,6 +141,9 @@ class CommandSet:
 
         # Identity
         self.IDENTITY = Command( 0, TYPE_U32 )
+
+        # Feedback debug
+        self.FEEDBACK_PINS = Command( 4, TYPE_U8, split_bits = True )
 
         # PID controller
         self.PID_KP = Command( controller+0, TYPE_I16 )
