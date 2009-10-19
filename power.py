@@ -23,8 +23,12 @@ CMD_RTS = 0x0d
 CMD_CTS = 0x0e
 CMD_XBE = 0x0f
 
-#functions commented out are correct but currently unusable due to firmware constraints, this will be addressed shortly
 def setleds(led,val):
+    if val:
+        val = 1
+    else:
+        val = 0
+
     temp = powerread(ADDRESS, CMD_LED)[0]
     temp = temp & ~(1<<led)
     temp |= val <<led
