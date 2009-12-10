@@ -23,6 +23,9 @@ CMD_RTS = 0x0d
 CMD_CTS = 0x0e
 CMD_XBE = 0x0f
 
+def identify():
+    return powerread(ADDRESS, CMD_IDENTIFY)
+
 def setleds(led,val):
     if val:
         val = 1
