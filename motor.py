@@ -359,7 +359,7 @@ class Motor(poll.Poll):
 class Motors(list):
     # Sensor types
     NULL = "null sensor"
-    AS5030 = "as5030 sensor"
+    ADS5030 = AS5030 = "as5030 sensor"
 
     # Controller types:
     UNITY = "unity controller"
