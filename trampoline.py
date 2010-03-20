@@ -50,7 +50,9 @@ class Coroutine:
 
     def configure_event(self):
         "Configure robot.event to represent the last event"
-        robot.event = EventInfo(self.event)
+        ev = EventInfo(self.event)
+        __builtins__["event"] = ev
+        robot.event = ev
 
     def poll(self):
         "Call poll functions."
@@ -154,6 +156,7 @@ class Trampoline:
         coroutines.append( Coroutine( sync(), name = "sync" ) )
 
         robot.event = None
+        __builtins__["event"] = None
 
         while True:
             for i in range(0, len(coroutines)): 
