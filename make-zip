@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -f pyenv.zip ]
+    then
+    rm -f pyenv.zip
+fi
+
+( cd pyenv ; zip -r ../pyenv.zip ./ ; )
