@@ -19,7 +19,20 @@ class VisionEvent(Event):
             self.colour = int(colour)
             self.width = int(width)
             self.height = int(height)
-    
+
+        def __colour_str(self):
+            if self.colour == RED:
+                return "red"
+            elif self.colour == BLUE:
+                return "blue"
+            elif self.colour == GREEN:
+                return "green"
+
+        def __str__(self):
+            return "%s blob at %i, %i of size %i x %i" % ( self.__colour_str(),
+                                                           self.x, self.y,
+                                                           self.width, self.height )
+
     def __init__(self):
         Event.__init__(self, vision)
         self.blobs = []
