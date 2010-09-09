@@ -1,4 +1,3 @@
-import c2py
 from repeat import *
 
 ADDRESS = 0x2E
