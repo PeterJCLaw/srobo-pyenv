@@ -1,4 +1,3 @@
-import c2py
 from events import Event
 import poll
 # Whether to display i2c debug info
@@ -100,25 +99,12 @@ class Command:
         reg is the register number.
         l is the length of the register in byte.
         Returns array of received bytes."""
-        while True:
-            try:
-                r = c2py.motor_reg_read( ADDRESS, self.reg, l )
-                break
-            except c2py.I2CError:
-                pass
-        self._debug("Read", r)
-        return r
+        
+        return NotImplemented
 
     def _reg_write( self, data ):
-        self._debug("Write", data)
-        while True:
-            try:
-                c2py.motor_reg_write( ADDRESS, self.reg, data )
 
-                if self._reg_read( len(data) ) == data:
-                    break
-            except c2py.I2CError:
-                pass
+        return NotImplemented
 
     def _debug(self, s, data):
         if not DEBUG_I2C:
