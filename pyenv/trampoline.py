@@ -48,12 +48,6 @@ class Coroutine:
         self.stack = [generator]
         self.event = None
 
-    def configure_event(self):
-        "Configure robot.event to represent the last event"
-        ev = EventInfo(self.event)
-        __builtins__["event"] = ev
-        robot.event = ev
-
     def poll(self):
         "Call poll functions."
         for p in xrange(0, len(self.polls)):
@@ -83,19 +77,25 @@ class Coroutine:
     def proc(self):
         "Call the generator and get new polls."
 
-        if self.event == None and (not self.first_run):
-            return
-
-        self.first_run = False
-
-        self.configure_event()
-
         #Run the command on the top of the stack
         #If the generator is done, try the next one
         #If there are no generators, throw a StopIteration
+
+        if self.event == None and (not self.first_run):
+            return
+
         while True:
+
             try:
-                results = self.stack[-1].next()
+                if not self.first_run:
+                    results = self.stack[-1].send(EventInfo(self.event))
+                else:
+                    """
+                    send()ing a value to to a non-started generator doesn't
+                    make sense -- it's not 'waiting' for a value.
+                    """
+                    results = self.stack[-1].next()
+                    self.first_run = False
                 break
             except StopIteration:
                 #Remove the current function from the stack
@@ -154,9 +154,6 @@ class Trampoline:
 
         # sync to disk every 5 seconds:
         coroutines.append( Coroutine( sync(), name = "sync" ) )
-
-        robot.event = None
-        __builtins__["event"] = None
 
         while True:
             for i in range(0, len(coroutines)): 
