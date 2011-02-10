@@ -1,9 +1,6 @@
 import subprocess, sys
 import types
 import logging
-
-import robot
-
 import addhack
 from time_event import TimeoutEvent
 from poll import Poll, TimePoll
