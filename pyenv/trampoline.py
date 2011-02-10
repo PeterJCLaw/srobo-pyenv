@@ -7,8 +7,6 @@ import robot
 import addhack
 from time_event import TimeoutEvent
 from poll import Poll, TimePoll
-from games import *
-from colours import *
 
 class EventInfo:
     def __init__(self, evtree):
@@ -141,9 +139,8 @@ def sync():
         subprocess.Popen("sync").wait()
 
 class Trampoline:
-    def __init__(self, colour=RED, game = GOLF):
-        self.colour = colour
-        self.game = game
+    def __init__(self):
+        pass
 
     def schedule(self):
         """

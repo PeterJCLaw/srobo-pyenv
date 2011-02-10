@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys, logging, os, os.path, subprocess, select, time, traceback
-import games, colours
+import colours
 from addhack import add_coroutine
 import power
 
