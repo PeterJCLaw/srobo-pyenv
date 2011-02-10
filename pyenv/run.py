@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys, logging, os, os.path, subprocess, select, time, traceback
+import trampoline
 import colours
 from addhack import add_coroutine
 import power
@@ -39,12 +40,6 @@ try:
     loc = os.path.join(os.curdir, "robot.zip")
     sys.path.insert(0, loc)
     print "%s added to python path." % loc
-
-    import jointio, motor, pwm, vis, power
-    print "Peripheral libraries imported"
-    
-    import trampoline
-    print "Trampoline imported"
 
     t = trampoline.Trampoline()
     if wait_start_event:
