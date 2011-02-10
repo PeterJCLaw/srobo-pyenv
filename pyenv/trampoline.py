@@ -176,10 +176,3 @@ class Trampoline:
             for c in addhack.get_coroutines():
                 coroutines.append( Coroutine( c[0](*c[1],**c[2]) ) )
             addhack.clear_coroutines()
-
-if __name__ == "__main__":
-    import sys, os, os.path
-    sys.path.insert(0, os.path.join(os.curdir, "robot.zip"))
-    import robot
-    t = Trampoline()
-    t.schedule()
