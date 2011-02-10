@@ -1,1 +1,3 @@
 #!/bin/bash
+
+echo "WARNING:  This is not the real hueblobs!" 1>&2
