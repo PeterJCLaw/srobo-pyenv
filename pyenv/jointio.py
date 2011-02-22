@@ -1,5 +1,4 @@
 from events import Event
-from repeat import *
 import logging
 import poll
 
