@@ -1,9 +1,6 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, subprocess, select, time, traceback
+import sys, logging, os, os.path, traceback
 import trampoline
-import colours
-from addhack import add_coroutine
-import power
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
