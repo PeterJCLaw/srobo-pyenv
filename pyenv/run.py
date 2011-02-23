@@ -1,32 +1,22 @@
 #!/usr/bin/python
-import sys, logging, os, os.path, traceback
+import argparse, sys, logging, os, os.path, traceback
 import trampoline
+
+parser = argparse.ArgumentParser( description = "Run some robot code." )
+parser.add_argument( "-d", "--debug", dest = "debug", action = "store_true",
+                     help = "Send output to terminal, not logfile." )
+parser.add_argument( "-i", "--immed", dest = "immed_start", action = "store_true",
+                     help = "Start user code immediately, rather than waiting for a button press or radio event." )
+args = parser.parse_args()
+
+if not args.debug:
+    "Put stdout and stderr into log file"
+    sys.stderr = sys.stdout = open("log.txt", "at")
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     stream = sys.stdout)
 
-# Debug mode
-debug = False
-# Whether to wait for a start event
-wait_start_event = True
-
-if len(sys.argv) > 1:
-    for a in sys.argv[1:]:
-        if a == "-d":
-            debug = True
-        elif a == "--start":
-            wait_start_event = False
-        elif a == "--help":
-            print """Usage: %s ARGS
-Where ARGS can be:
- -d		Send stdout and stderr to terminal, not log.txt.
- --start	Start the robot code immediately.
-		Don't wait for a button or radio event.""" % os.path.basename(sys.argv[0])
-            sys.exit(0)
-
-if not debug:
-    sys.stderr = sys.stdout = open("log.txt", "at")
 os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
 
 print "Initialising trampoline..."
@@ -39,8 +29,8 @@ try:
     print "%s added to python path." % loc
 
     t = trampoline.Trampoline()
-    if wait_start_event:
-        pass
+    if not args.immed_start:
+        print "TODO: Wait for button press etc!"
     else:
         print "Starting code"
         import addhack, robot
