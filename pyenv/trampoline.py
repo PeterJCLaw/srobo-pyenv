@@ -128,13 +128,6 @@ class Coroutine:
                     print "WARNING: Ignoring poll", str(result)
                     print type(result)
 
-def sync():
-    "Sync to disk every 5 seconds"
-    while True:
-        yield 5
-        sys.stdout.flush()
-        subprocess.Popen("sync").wait()
-
 class Trampoline:
     def __init__(self):
         pass
@@ -145,9 +138,6 @@ class Trampoline:
         Ask each coroutine to poll, then execute them.
         """
         coroutines = []
-
-        # sync to disk every 5 seconds:
-        coroutines.append( Coroutine( sync(), name = "sync" ) )
 
         while True:
             for i in range(0, len(coroutines)): 
