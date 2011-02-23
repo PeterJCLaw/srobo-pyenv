@@ -38,6 +38,5 @@ try:
     print "Starting trampoline"
     t.schedule()
 except:
-    print "Could not load user code!"
     print "Error: "
     traceback.print_exc(file=sys.stderr)
