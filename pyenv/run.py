@@ -17,8 +17,6 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     stream = sys.stdout)
 
-os.putenv("LD_LIBRARY_PATH", "/usr/local/lib")
-
 print "Initialising trampoline..."
 try:
     import fw
