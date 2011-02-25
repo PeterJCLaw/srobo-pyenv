@@ -1,3 +1,4 @@
+from motor import motor
 from vis import vision
 from colours import *
 import logging
