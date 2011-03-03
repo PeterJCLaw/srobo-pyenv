@@ -1,5 +1,5 @@
 # Interface to motor controllers
-import pysric, types
+import pysric, types, __builtin__
 
 # Motor controller SRIC commands
 CMD_MOTOR_SET = 0
@@ -59,6 +59,20 @@ class Motor(object):
 ps = pysric.PySric()
 motor = []
 
+def _stop_motor( dev ):
+    dev.target = 0
+
+_exit_registered = hasattr(__builtin__, "__sr_motor_registered")
+
 if pysric.SRIC_CLASS_MOTOR in ps.devices:
+
     for dev in ps.devices[ pysric.SRIC_CLASS_MOTOR ]:
-        motor.append( Motor(dev) )
+        motor_dev = Motor(dev)
+        motor.append( motor_dev )
+
+        if hasattr(__builtin__, "__sr_trampoline") and not _exit_registered:
+            "Register an exit handler to turn off the motor on exit"
+            __sr_cleanup_funcs.append( (_stop_motor, motor_dev) )
+
+# The exit handlers have now been registered
+__builtin__.__sr_motor_registered = True
