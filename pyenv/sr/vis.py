@@ -47,7 +47,7 @@ class VisionEvent(Event):
 
 class VisProc:
     def __init__(self):
-	sp = subprocess.Popen("./hueblobs", stdout=subprocess.PIPE,
+	sp = subprocess.Popen("./bin/hueblobs", stdout=subprocess.PIPE,
             stdin=subprocess.PIPE)
 	self.fifo = sp.stdout.fileno()
 	self.command = sp.stdin

@@ -31,9 +31,9 @@ try:
         print "TODO: Wait for button press etc!"
     else:
         print "Starting code"
-        import addhack, robot
-        addhack.add_queued()
-        addhack.add_coroutine( robot.main )
+        import sr.addhack, robot
+        sr.addhack.add_queued()
+        sr.addhack.add_coroutine( robot.main )
 
     print "Starting trampoline"
     t.schedule()
