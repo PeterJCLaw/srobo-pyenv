@@ -19,7 +19,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 print "Initialising..."
 try:
-    sricd.start()
+    # Add libsric location to path
+    os.environ["PYSRIC_LIBDIR"] = os.path.join( os.getcwd(), "lib" )
+    sricd.start("sricd.log")
 
     import fw
     fw.update_all()    
