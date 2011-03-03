@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import argparse, sys, logging, os, os.path, traceback
-import trampoline
+import trampoline, sricd
 
 parser = argparse.ArgumentParser( description = "Run some robot code." )
 parser.add_argument( "-d", "--debug", dest = "debug", action = "store_true",
@@ -19,6 +19,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 print "Initialising..."
 try:
+    sricd.start()
+
     import fw
     fw.update_all()    
 
