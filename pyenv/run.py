@@ -51,8 +51,9 @@ except:
     print "Error: "
     traceback.print_exc(file=sys.stderr)
 
-    for f in __sr_cleanup_funcs:
-        if isinstance( f, tuple ):
-            f[0](*f[1:])
-        else:
-            f()
+print "Calling %i cleanup functions" % (len(__sr_cleanup_funcs))
+for f in __sr_cleanup_funcs:
+    if isinstance( f, tuple ):
+        f[0](*f[1:])
+    else:
+        f()
