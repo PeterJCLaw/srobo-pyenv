@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     stream = sys.stdout)
 
-print "Initialising trampoline..."
+print "Initialising..."
 try:
     import fw
     fw.update_all()    
