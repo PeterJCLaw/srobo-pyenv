@@ -1,9 +1,9 @@
 import subprocess, sys
 import types
 import logging
-import sr.addhack as addhack
-from sr.time_event import TimeoutEvent
-from sr.poll import Poll, TimePoll
+import addhack as addhack
+from time_event import TimeoutEvent
+from poll import Poll, TimePoll
 
 class EventInfo:
     def __init__(self, evtree):
