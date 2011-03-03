@@ -1,13 +1,13 @@
 #!/usr/bin/python
-import argparse, sys, logging, os, os.path, traceback
+import optparse, sys, logging, os, os.path, traceback
 import trampoline, sricd
 
-parser = argparse.ArgumentParser( description = "Run some robot code." )
-parser.add_argument( "-d", "--debug", dest = "debug", action = "store_true",
+parser = optparse.OptionParser( description = "Run some robot code." )
+parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
                      help = "Send output to terminal, not logfile." )
-parser.add_argument( "-i", "--immed", dest = "immed_start", action = "store_true",
+parser.add_option( "-i", "--immed", dest = "immed_start", action = "store_true",
                      help = "Start user code immediately, rather than waiting for a button press or radio event." )
-args = parser.parse_args()
+args, trailing_args = parser.parse_args()
 
 if not args.debug:
     "Put stdout and stderr into log file"
