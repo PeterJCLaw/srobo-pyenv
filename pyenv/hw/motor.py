@@ -59,5 +59,6 @@ class Motor(object):
 ps = pysric.PySric()
 motor = []
 
-for dev in ps.devices[ pysric.SRIC_CLASS_MOTOR ]:
-    motor.append( Motor(dev) )
+if pysric.SRIC_CLASS_MOTOR in ps.devices:
+    for dev in ps.devices[ pysric.SRIC_CLASS_MOTOR ]:
+        motor.append( Motor(dev) )
