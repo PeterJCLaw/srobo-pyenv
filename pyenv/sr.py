@@ -1,4 +1,5 @@
 from hw.motor import motor
+from hw.power import power
 from hw.vis import vision
 from hw.colours import *
 
