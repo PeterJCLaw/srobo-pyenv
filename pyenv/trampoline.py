@@ -10,7 +10,7 @@ class EventInfo:
         self.evtree = evtree
         self.pop_tree()
 
-    def __eq__(self, obj):
+    def was(self, obj):
         def ev_cmp(e):
             if isinstance(e, list):
                 for x in e:
