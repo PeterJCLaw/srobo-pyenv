@@ -41,7 +41,9 @@ class Power:
         self.dev.txrx( tx )
 
     def _set_leds(self, flags):
-        print "setleds"
+        # Insert here: validation of argument
+        tx = [ CMD_SET_LEDS, flags ]
+        self.dev.txrx( tx )
 
     class LedArray(array):
         def __init__(self, typeclass, init_values=None):
