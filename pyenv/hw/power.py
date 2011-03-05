@@ -1,5 +1,6 @@
 from jointio import IOPoll
 from events import Event
+from array import array
 import pysric
 
 CMD_ENABLE_INPUT_NOTES = 5
@@ -38,6 +39,16 @@ class Power:
             tx.append( 5 )
 
         self.dev.txrx( tx )
+
+    class LedArray(array):
+        def __init__(self, typeclass, init_values=None):
+            array.__init__(self, typeclass, init_values)
+
+        def __setitem__(self, idx, val):
+            print "setting idx " + str(idx) + " to " + str(val)
+            array.__setitem__(self, idx, val)
+
+    led = LedArray('I', [0, 0, 0])
 
 ps = pysric.PySric()
 power = None
