@@ -116,6 +116,7 @@ vis_proc = VisProc()
 
 class VisObj(poll.Poll):
     def __init__(self):
+        poll.Poll.__init__(self)
         self.waiting = False
 
     def eval(self):
