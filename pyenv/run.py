@@ -29,8 +29,8 @@ try:
     os.environ["PYSRIC_LIBDIR"] = os.path.join( os.getcwd(), "lib" )
     sricd.start("sricd.log")
 
-    import fw
-    fw.update_all()    
+#    import fw
+#    fw.update_all()
 
     loc = os.path.join(os.curdir, "robot.zip")
     sys.path.insert(0, loc)
