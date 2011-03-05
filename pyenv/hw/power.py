@@ -50,7 +50,6 @@ class Power:
             array.__init__(self, typeclass, init_values)
 
         def __setitem__(self, idx, val):
-            print "setting idx " + str(idx) + " to " + str(val)
             update = array.__getitem__(self, idx) != val
             array.__setitem__(self, idx, val)
 
