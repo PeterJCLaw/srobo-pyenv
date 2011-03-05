@@ -122,7 +122,7 @@ class VisObj(poll.Poll):
     def eval(self):
         if self.waiting == False:
             self.our_req_num = vis_proc.make_req()
-                self.waiting = True
+            self.waiting = True
 
         obj = vis_proc.poll_req(self.our_req_num)
 
