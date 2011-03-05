@@ -4,6 +4,10 @@ from hw.vis import vision
 from hw.colours import *
 
 from poll import And, Or, TimePoll
+
+class query:
+    timeout = TimePoll
+
 from hw.jointio import io
 from addhack import add_coroutine, coroutine
-from time_event import timeout
+
