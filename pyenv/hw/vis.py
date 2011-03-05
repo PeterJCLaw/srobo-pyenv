@@ -115,10 +115,20 @@ class VisProc:
 print "Starting vision system"
 vis_proc = VisProc()
 
-class vision(poll.Poll):
+class VisObj(poll.Poll):
     def __init__(self):
-	poll.Poll.__init__(self)
-	self.our_req_num = vis_proc.make_req()
+	self.waiting = False
 
     def eval(self):
-	return vis_proc.poll_req(self.our_req_num)
+	if self.waiting == False:
+		self.our_req_num = vis_proc.make_req()
+		self.waiting = True
+
+	obj = vis_proc.poll_req(self.our_req_num)
+
+	if obj != None:
+		self.waiting = False
+
+	return obj
+
+vision = VisObj()
