@@ -56,7 +56,7 @@ class Power:
             if update:
                 flags = 0
                 for i in range(3):
-                    if array.__getitem__(self, i) == 1:
+                    if array.__getitem__(self, i) != 0:
                         flags |= (1 << i)
 
                 power._set_leds(flags)
