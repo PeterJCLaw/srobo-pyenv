@@ -40,13 +40,25 @@ class Power:
 
         self.dev.txrx( tx )
 
+    def _set_leds(self, flags):
+        print "setleds"
+
     class LedArray(array):
         def __init__(self, typeclass, init_values=None):
             array.__init__(self, typeclass, init_values)
 
         def __setitem__(self, idx, val):
             print "setting idx " + str(idx) + " to " + str(val)
+            update = array.__getitem__(self, idx) != val
             array.__setitem__(self, idx, val)
+
+            if update:
+                flags = 0
+                for i in range(3):
+                    if array.__getitem__(self, i) == 1:
+                        flags |= (1 << i)
+
+                power._set_leds(flags)
 
     led = LedArray('I', [0, 0, 0])
 
