@@ -120,8 +120,6 @@ class Coroutine:
             for result in results:
                 if result.__class__ == types.GeneratorType:
                     self.polls.append(result)
-                elif isinstance(result, int) or isinstance(result, float):
-                    self.polls.append( TimePoll(result) )
                 elif isinstance(result,Poll):
                     self.polls.append(result)
                 else:
