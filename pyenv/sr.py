@@ -8,6 +8,7 @@ from poll import And, Or, TimePoll
 class query:
     timeout = TimePoll
 
+from time_event import timeout
 from hw.jointio import io
 from addhack import add_coroutine, coroutine
 
