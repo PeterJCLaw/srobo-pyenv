@@ -41,11 +41,6 @@ class Power:
 
         self.dev.txrx( tx )
 
-    def _set_leds(self, flags):
-        # Insert here: validation of argument
-        tx = [ CMD_SET_LEDS, flags ]
-        self.dev.txrx( tx )
-
     class LedArray(array):
         def __new__(cls, typeclass, init_values, dev):
             return array.__new__(cls, typeclass, init_values)
@@ -65,7 +60,8 @@ class Power:
                     if array.__getitem__(self, i) != 0:
                         flags |= (1 << i)
 
-                power._set_leds(flags)
+                tx = [ CMD_SET_LEDS, flags ]
+                self.dev.txrx( tx )
 
 
 ps = pysric.PySric()
