@@ -63,6 +63,14 @@ class Power:
                 tx = [ CMD_SET_LEDS, flags ]
                 self.dev.txrx( tx )
 
+        def __getitem__(self, idx):
+            tx = [ CMD_GET_LEDS ]
+            rx = self.dev.txrx( tx )
+            if rx[0] & (1 << idx):
+                return 1
+            else:
+                return 0
+
 
 ps = pysric.PySric()
 power = None
