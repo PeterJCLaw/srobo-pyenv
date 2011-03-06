@@ -53,15 +53,19 @@ class Power:
             self.dev = dev
 
         def __setitem__(self, idx, val):
-            update = array.__getitem__(self, idx) != val
-            array.__setitem__(self, idx, val)
+            # Fetch current status of led
+            tx = [ CMD_GET_LEDS ]
+            rx = self.dev.txrx( tx )
+            bit = rx[0] & (1 << idx)
+            bit = bit >> idx
 
-            if update:
-                flags = 0
-                for i in range(3):
-                    if array.__getitem__(self, i) != 0:
-                        flags |= (1 << i)
+            # Normalise the value of val
+            if val != 0:
+                val = 1
 
+            if (bit != val):
+                flags = rx[0] & (~(1 << idx))
+                flags |= (val << idx)
                 tx = [ CMD_SET_LEDS, flags ]
                 self.dev.txrx( tx )
 
