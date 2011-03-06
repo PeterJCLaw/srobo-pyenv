@@ -10,6 +10,7 @@ CMD_SET_LEDS = 7
 class Power:
     def __init__(self, dev):
         self.dev = dev
+        self.led = Power.LedArray('I', [0, 0, 0], dev)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
@@ -46,8 +47,13 @@ class Power:
         self.dev.txrx( tx )
 
     class LedArray(array):
-        def __init__(self, typeclass, init_values=None):
-            array.__init__(self, typeclass, init_values)
+        def __new__(cls, typeclass, init_values, dev):
+            return array.__new__(cls, typeclass, init_values)
+
+        def __init__(self, typeclass, init_values, dev=None):
+            # We receive a deprecation warning if the following is enabled
+            # array.__init__(self, typeclass, init_values)
+            self.dev = dev
 
         def __setitem__(self, idx, val):
             update = array.__getitem__(self, idx) != val
@@ -61,7 +67,6 @@ class Power:
 
                 power._set_leds(flags)
 
-    led = LedArray('I', [0, 0, 0])
 
 ps = pysric.PySric()
 power = None
