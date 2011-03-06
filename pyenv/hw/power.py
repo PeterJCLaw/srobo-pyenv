@@ -6,6 +6,8 @@ import pysric
 CMD_ENABLE_INPUT_NOTES = 5
 CMD_PLAY_PIEZO = 6
 CMD_SET_LEDS = 7
+CMD_SET_MOTOR_RAIL = 8
+CMD_GET_LEDS = 9
 
 class Power:
     def __init__(self, dev):
