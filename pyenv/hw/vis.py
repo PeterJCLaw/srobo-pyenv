@@ -62,6 +62,7 @@ class VisProc:
         #commands queued to hueblobs as it waits on stdin. If we add
         #multiple lines, multiple requests
         self.command.write(str(self.reqnum) + "\n")
+        self.command.flush()
         self.ournum = self.reqnum
         self.reqnum += 1
         return self.ournum
