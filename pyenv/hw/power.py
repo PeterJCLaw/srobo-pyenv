@@ -17,11 +17,10 @@ class LedList(object):
         tx = [ CMD_GET_LEDS ]
         rx = self.dev.txrx( tx )
         bit = rx[0] & (1 << idx)
-        bit = bit >> idx
+        bit = bool(bit >> idx)
 
-        # Normalise the value of val
-        if val != 0:
-            val = 1
+        # Normalise val
+        val = bool(val)
 
         if (bit != val):
             flags = rx[0] & (~(1 << idx))
@@ -32,10 +31,7 @@ class LedList(object):
     def __getitem__(self, idx):
         tx = [ CMD_GET_LEDS ]
         rx = self.dev.txrx( tx )
-        if rx[0] & (1 << idx):
-            return 1
-        else:
-            return 0
+        return bool( rx[0] & (1 << idx) )
 
 class Power:
     def __init__(self, dev):
