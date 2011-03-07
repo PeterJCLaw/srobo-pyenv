@@ -14,24 +14,29 @@ class LedList(object):
 
     def __setitem__(self, idx, val):
         # Fetch current status of led
-        tx = [ CMD_GET_LEDS ]
-        rx = self.dev.txrx( tx )
-        bit = rx[0] & (1 << idx)
-        bit = bool(bit >> idx)
+        r = self._get_leds()
+        bit = bool( r & (1 << idx) )
 
         # Normalise val
         val = bool(val)
 
         if (bit != val):
-            flags = rx[0] & (~(1 << idx))
-            flags |= (val << idx)
+            flags = r & (~(1 << idx))
+            if val:
+                flags |= (1 << idx)
             tx = [ CMD_SET_LEDS, flags ]
             self.dev.txrx( tx )
 
     def __getitem__(self, idx):
+        r = self._get_leds()
+        return bool( r & (1 << idx) )
+
+    def _get_leds(self):
+        """Read the state of all the LEDs.
+        Return the values in a bitmask."""
         tx = [ CMD_GET_LEDS ]
         rx = self.dev.txrx( tx )
-        return bool( rx[0] & (1 << idx) )
+        return rx[0]
 
 class Power:
     def __init__(self, dev):
