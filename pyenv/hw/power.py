@@ -8,10 +8,9 @@ CMD_SET_LEDS = 7
 CMD_SET_MOTOR_RAIL = 8
 CMD_GET_LEDS = 9
 
-class LedList(list):
+class LedList(object):
     def __init__(self, dev=None):
         self.dev = dev
-        list.__init__(self)
 
     def __setitem__(self, idx, val):
         # Fetch current status of led
