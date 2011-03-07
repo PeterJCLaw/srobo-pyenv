@@ -16,6 +16,9 @@ class LedList(object):
         return 3
 
     def __setitem__(self, idx, val):
+        if idx > 2 or idx < 0:
+            raise IndexError("The powerboard only has 3 LEDs")
+
         # Fetch current status of led
         r = self._get_leds()
         bit = bool( r & (1 << idx) )
@@ -31,6 +34,9 @@ class LedList(object):
             self.dev.txrx( tx )
 
     def __getitem__(self, idx):
+        if idx > 2 or idx < 0:
+            raise IndexError("The powerboard only has 3 LEDs")
+
         r = self._get_leds()
         return bool( r & (1 << idx) )
 
