@@ -12,6 +12,9 @@ class LedList(object):
     def __init__(self, dev=None):
         self.dev = dev
 
+    def __len__(self):
+        return 3
+
     def __setitem__(self, idx, val):
         # Fetch current status of led
         r = self._get_leds()
