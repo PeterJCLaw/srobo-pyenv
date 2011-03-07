@@ -11,7 +11,7 @@ CMD_GET_LEDS = 9
 class Power:
     def __init__(self, dev):
         self.dev = dev
-        self.led = Power.LedList('I', [0, 0, 0], dev)
+        self.led = Power.LedList(dev)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
@@ -43,13 +43,9 @@ class Power:
         self.dev.txrx( tx )
 
     class LedList(list):
-        def __new__(cls, typeclass, init_values, dev):
-            return list.__new__(cls, typeclass, init_values)
-
-        def __init__(self, typeclass, init_values, dev=None):
-            # We receive a deprecation warning if the following is enabled
-            # list.__init__(self, typeclass, init_values)
+        def __init__(self, dev=None):
             self.dev = dev
+            list.__init__(self)
 
         def __setitem__(self, idx, val):
             # Fetch current status of led
