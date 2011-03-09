@@ -7,6 +7,7 @@ __builtin__.__sr_cleanup_funcs = []
 
 import optparse, sys, logging, os, os.path, traceback
 import trampoline, sricd
+import subprocess
 
 parser = optparse.OptionParser( description = "Run some robot code." )
 parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
@@ -38,12 +39,12 @@ try:
 
     t = trampoline.Trampoline()
     if not args.immed_start:
-        print "TODO: Wait for button press etc!"
-    else:
-        print "Starting code"
-        import addhack, robot
-        addhack.add_queued()
-        addhack.add_coroutine( robot.main )
+        os.environ["LD_LIBRARY_PATH"] = os.path.join( os.getcwd(), "lib" )
+        subprocess.call("./bin/pyenv_start")
+
+    import addhack, robot
+    addhack.add_queued()
+    addhack.add_coroutine( robot.main )
 
     print "Starting trampoline"
     t.schedule()
