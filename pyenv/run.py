@@ -37,10 +37,17 @@ try:
     sys.path.insert(0, loc)
     print "%s added to python path." % loc
 
+    # Hack in launch of display: begins with "Press button to start" message
+    os.environ["DISPLAY"] = ":0.0"
+    disp = subprocess.Popen(["./bin/squidge", "./log.txt"], stdin=subprocess.PIPE)
+
     t = trampoline.Trampoline()
     if not args.immed_start:
         os.environ["LD_LIBRARY_PATH"] = os.path.join( os.getcwd(), "lib" )
         subprocess.call("./bin/pyenv_start")
+
+    # Feed display a newline once code it to be launched
+    disp.stdin.write("\n")
 
     import addhack, robot
     addhack.add_queued()
