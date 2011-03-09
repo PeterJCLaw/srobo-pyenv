@@ -41,9 +41,12 @@ try:
     os.environ["DISPLAY"] = ":0.0"
     disp = subprocess.Popen(["./bin/squidge", "./log.txt"], stdin=subprocess.PIPE)
 
+    # Also in this series, the input-grabber
+    os.environ["LD_LIBRARY_PATH"] = os.path.join( os.getcwd(), "lib" )
+    subprocess.Popen("./bin/srinput")
+
     t = trampoline.Trampoline()
     if not args.immed_start:
-        os.environ["LD_LIBRARY_PATH"] = os.path.join( os.getcwd(), "lib" )
         subprocess.call("./bin/pyenv_start")
 
     # Feed display a newline once code it to be launched
