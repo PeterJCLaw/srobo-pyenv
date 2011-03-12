@@ -46,9 +46,12 @@ try:
 #    import fw
 #    fw.update_all()
 
-    loc = os.path.join(os.curdir, "robot.zip")
-    sys.path.insert(0, loc)
-    print "%s added to python path." % loc
+    if os.path.exists( "robot.zip" ):
+        "robot.zip exists, everyone's happy"
+        sys.path.insert(0, os.path.join(os.curdir, "robot.zip"))
+    elif not os.path.exists( "robot.py" ):
+        "No robot code around"
+        raise Exception( "No robot code found." )
 
     # Hack in launch of display: begins with "Press button to start" message
     disp = subprocess.Popen(["./bin/squidge", "./log.txt"], stdin=subprocess.PIPE)
