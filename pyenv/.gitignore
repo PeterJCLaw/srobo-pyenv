@@ -1,3 +1,5 @@
 *.pyc
 robot.py
 robot
+log.txt
+sricd.log
