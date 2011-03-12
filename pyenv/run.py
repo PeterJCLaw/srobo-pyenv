@@ -18,7 +18,7 @@ args, trailing_args = parser.parse_args()
 
 if not args.debug:
     "Put stdout and stderr into log file"
-    sys.stderr = sys.stdout = open("log.txt", "at")
+    sys.stderr = sys.stdout = open("log.txt", "at", 1)
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
