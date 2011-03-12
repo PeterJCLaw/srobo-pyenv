@@ -16,11 +16,17 @@ parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
                      help = "Send output to terminal, not logfile." )
 parser.add_option( "-i", "--immed", dest = "immed_start", action = "store_true",
                      help = "Start user code immediately, rather than waiting for a button press or radio event." )
+parser.add_option( "-l", "--log-dir", dest = "log_dir", default = "./",
+                   help = "Log into the given directory." )
 args, trailing_args = parser.parse_args()
 
+if not os.path.exists( args.log_dir ):
+    os.mkdir( args.log_dir )
+
+LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
 if not args.debug:
     "Put stdout and stderr into log file"
-    sys.stderr = sys.stdout = open("log.txt", "at", 1)
+    sys.stderr = sys.stdout = open( LOG_FNAME, "at", 1)
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -41,7 +47,7 @@ try:
         os.remove("/var/run/messagebus.pid")
     subprocess.call(["/etc/init.d/dbus-1", "start"])
 
-    sricd.start("sricd.log")
+    sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
 #    import fw
 #    fw.update_all()
@@ -54,7 +60,7 @@ try:
         raise Exception( "No robot code found." )
 
     # Hack in launch of display: begins with "Press button to start" message
-    disp = subprocess.Popen(["./bin/squidge", "./log.txt"], stdin=subprocess.PIPE)
+    disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
     # Also in this series, the input-grabber
     subprocess.Popen("./bin/srinput")
