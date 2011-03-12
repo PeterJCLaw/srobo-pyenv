@@ -1,0 +1,29 @@
+#!/usr/bin/python
+import zipfile, sys, os
+
+if len(sys.argv) != 3:
+    print >>sys.stderr, "Usage: fastwrap-extract IN OUT"
+    exit(1)
+
+IN, OUT = sys.argv[1:]
+
+fz = zipfile.ZipFile( IN, "r" )
+of = open(OUT, "w")
+
+comments = {}
+for zi in fz.infolist():
+    comments[zi.filename] = zi.comment
+
+buf = ""
+n = 0
+while True:
+    name = "fastwrap_%5.5i" % n
+
+    if name not in comments:
+        break
+
+    of.write( comments[name] )
+    n+=1
+
+of.close()
+fz.close()

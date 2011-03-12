@@ -1,0 +1,27 @@
+#!/usr/bin/python
+import zipfile, sys, os
+CHUNK_SIZE = 0xffff
+
+if len(sys.argv) != 3:
+    print >>sys.stderr, "Usage: make-fastwrap-zip IN OUT"
+    exit(1)
+
+IN, OUT = sys.argv[1:]
+
+outzip = zipfile.ZipFile( OUT, "w",
+                          # No compression
+                          zipfile.ZIP_STORED )
+
+buf = open( IN, "r" ).read()
+
+n = 0
+for i in range(0, len(buf), CHUNK_SIZE):
+    zi = zipfile.ZipInfo()
+    zi.filename = "fastwrap_%5.5i" % n
+    zi.comment = buf[i:i+CHUNK_SIZE]
+
+    outzip.writestr( zi, "File data stored in zip comment!" )
+    n += 1
+
+outzip.close()
+
