@@ -31,7 +31,6 @@ main(int argc, char **argv)
 	/* Because no-one else is going to, at this point we turn on
 	 * notifications from the power board about button presses */
 	frame.address = dev->address;
-fprintf(stderr, "Ohai, dev address %d\n", dev->address);
 	frame.note = -1;
 	frame.payload_length = 2;
 	frame.payload[0] = 5;
