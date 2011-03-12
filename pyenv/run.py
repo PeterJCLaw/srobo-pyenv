@@ -59,7 +59,6 @@ try:
     # Also in this series, the input-grabber
     subprocess.Popen("./bin/srinput")
 
-    t = trampoline.Trampoline()
     if not args.immed_start:
         subprocess.call("./bin/pyenv_start")
 
@@ -70,7 +69,8 @@ try:
     addhack.add_queued()
     addhack.add_coroutine( robot.main )
 
-    print "Starting trampoline"
+    print "Starting robot code"
+    t = trampoline.Trampoline()
     t.schedule()
 except:
     print "Error: "
