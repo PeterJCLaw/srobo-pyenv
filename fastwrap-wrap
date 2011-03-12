@@ -2,11 +2,12 @@
 import zipfile, sys, os
 CHUNK_SIZE = 0xffff
 
-if len(sys.argv) != 3:
-    print >>sys.stderr, "Usage: make-fastwrap-zip IN OUT"
+if len(sys.argv) < 3:
+    print >>sys.stderr, "Usage: make-fastwrap-zip IN OUT [additional files to include]"
     exit(1)
 
-IN, OUT = sys.argv[1:]
+IN, OUT = sys.argv[1:3]
+ADD_FILES = sys.argv[3:]
 
 outzip = zipfile.ZipFile( OUT, "w",
                           # No compression
@@ -23,5 +24,8 @@ for i in range(0, len(buf), CHUNK_SIZE):
     outzip.writestr( zi, "File data stored in zip comment!" )
     n += 1
 
-outzip.close()
+for fname in ADD_FILES:
+    "Add the extra files to the zip file"
+    outzip.write( fname, os.path.basename(fname) )
 
+outzip.close()
