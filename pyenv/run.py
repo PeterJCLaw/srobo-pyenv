@@ -28,6 +28,13 @@ print "Initialising..."
 try:
     # Add libsric location to path
     os.environ["PYSRIC_LIBDIR"] = os.path.join( os.getcwd(), "lib" )
+
+    # Need to start dbus, have to manually remove the pid file due to dbus being
+    # killed when the stick is removed
+    if os.path.isfile("/var/run/messagebus.pid"):
+        os.remove("/var/run/messagebus.pid")
+    subprocess.call(["/etc/init.d/dbus-1", "start"])
+
     sricd.start("sricd.log")
 
 #    import fw
