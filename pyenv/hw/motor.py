@@ -74,7 +74,7 @@ if pysric.SRIC_CLASS_MOTOR in ps.devices:
             "Register an exit handler to turn off the motor on exit"
             # We have to insert this at the beginning,
             # as sricd gets killed on shutdown, and we need sricd...
-            __sr_cleanup_funcs.insert(0, (_stop_motor, motor_dev) )
+            __sr_cleanup_funcs.insert(0, (False, _stop_motor, motor_dev) )
 
 # The exit handlers have now been registered
 __builtin__.__sr_motor_registered = True

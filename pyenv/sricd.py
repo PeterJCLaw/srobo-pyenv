@@ -28,8 +28,10 @@ def start(logfile):
     p.wait()
 
     if hasattr(__builtin__, "__sr_trampoline"):
-        "We're in the trampoline -- kill sricd on exit"
-        __sr_cleanup_funcs.append( _kill )
+        """We're in the trampoline -- kill sricd on exit in debug mode
+        (sricd is required to allow button events to get to the screen
+        when not in debug mode)"""
+        __sr_cleanup_funcs.append( (True, _kill) )
 
     # Wait two seconds for enumeration and stuff to complete
     # (otherwise libsric clients will get no devices listed)
