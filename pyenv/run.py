@@ -28,8 +28,12 @@ logging.basicConfig(level=logging.DEBUG,
 
 print "Initialising..."
 try:
-    # Add libsric location to path
-    os.environ["PYSRIC_LIBDIR"] = os.path.join( os.getcwd(), "lib" )
+    # Environment variables that we want:
+    envs = { "PYSRIC_LIBDIR": os.path.join( os.getcwd(), "lib" ),
+             "LD_LIBRARY_PATH": os.path.join( os.getcwd(), "lib" ),
+             "DISPLAY": ":0.0" }
+    for k,v in envs.iteritems():
+        os.environ[k] = v
 
     # Need to start dbus, have to manually remove the pid file due to dbus being
     # killed when the stick is removed
@@ -47,11 +51,9 @@ try:
     print "%s added to python path." % loc
 
     # Hack in launch of display: begins with "Press button to start" message
-    os.environ["DISPLAY"] = ":0.0"
     disp = subprocess.Popen(["./bin/squidge", "./log.txt"], stdin=subprocess.PIPE)
 
     # Also in this series, the input-grabber
-    os.environ["LD_LIBRARY_PATH"] = os.path.join( os.getcwd(), "lib" )
     subprocess.Popen("./bin/srinput")
 
     t = trampoline.Trampoline()
