@@ -45,7 +45,7 @@ try:
     # killed when the stick is removed
     if os.path.isfile("/var/run/messagebus.pid"):
         os.remove("/var/run/messagebus.pid")
-    subprocess.call(["/etc/init.d/dbus-1", "start"])
+    dbus_starter = subprocess.Popen(["/etc/init.d/dbus-1", "start"])
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
@@ -62,7 +62,9 @@ try:
     # Hack in launch of display: begins with "Press button to start" message
     disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
-    # Also in this series, the input-grabber
+    # X needs DBUS to feed it input events, so make sure it's started
+    # before running the input grabber
+    dbus_starter.wait()
     subprocess.Popen("./bin/srinput")
 
     if not args.immed_start:
