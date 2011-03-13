@@ -5,4 +5,16 @@ if [ -f pyenv.zip ]
     rm -f pyenv.zip
 fi
 
-( cd pyenv ; zip -r ../pyenv.zip ./ ; )
+td=`mktemp -d`
+
+cp -r pyenv/* $td
+target_zip=`pwd`/pyenv.zip
+
+cd $td
+
+# Remove unecessary files
+find -name '.gitignore' | xargs rm -f
+find -name '*.pyc' | xargs rm -f
+
+zip -r $target_zip ./
+rm -rf $td
