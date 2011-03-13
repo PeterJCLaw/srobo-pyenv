@@ -24,6 +24,9 @@ for i in range(0, len(buf), CHUNK_SIZE):
     outzip.writestr( zi, "File data stored in zip comment!" )
     n += 1
 
+# Store the number of chunks in the main zipfile comment
+outzip.comment = str(n)
+
 for fname in ADD_FILES:
     "Add the extra files to the zip file"
     outzip.write( fname, os.path.basename(fname) )

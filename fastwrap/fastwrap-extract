@@ -15,15 +15,13 @@ for zi in fz.infolist():
     comments[zi.filename] = zi.comment
 
 buf = ""
-n = 0
-while True:
-    name = "fastwrap_%5.5i" % n
 
+for n in range(0, int(fz.comment)):
+    name = "fastwrap_%5.5i" % n
     if name not in comments:
-        break
+        raise Exception("Missing chunk")
 
     of.write( comments[name] )
-    n+=1
 
 of.close()
 fz.close()
