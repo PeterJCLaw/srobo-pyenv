@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import zipfile, os, sys
+from pylab import *
+
+if len(sys.argv) != 2:
+    print "Usage: graph-zip ZIP"
+    exit(1)
+
+z = zipfile.ZipFile( sys.argv[1], "r" )
+
+infos = z.infolist()
+
+def sort(x,y):
+    return cmp(x.compress_size, y.compress_size)
+infos.sort(cmp=sort)
+
+pos = range(0, len(infos))
+barh( pos,
+      [x.file_size for x in infos], color = "red" )
+barh( pos,
+      [x.compress_size for x in infos] )
+
+yticks( [float(x) + 0.5 for x in pos], [x.filename for x in infos] )
+
+show()
