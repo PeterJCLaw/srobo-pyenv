@@ -16,5 +16,26 @@ cd $td
 find -name '.gitignore' | xargs rm -f
 find -name '*.pyc' | xargs rm -f
 
-zip -r $target_zip ./
+# Strip binaries
+find -type f | while read fname
+do
+    if [[ `file $fname | grep ELF` == "" ]]
+	then
+	# It's not an ELF
+	continue
+    fi
+
+    # Find out elf type
+    etype=`readelf -h $fname | grep 'Machine:'`
+
+    if [[ `echo $etype | grep msp430` != "" ]]
+	then
+	msp430-strip $fname
+    elif [[ `echo $etype | grep ARM` != "" ]]
+	then
+	arm-angstrom-linux-gnueabi-strip $fname
+    fi
+done
+
+zip -qr $target_zip ./
 rm -rf $td
