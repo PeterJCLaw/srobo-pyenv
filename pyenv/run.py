@@ -25,18 +25,18 @@ if not os.path.exists( args.log_dir ):
 
 LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
 
-if os.path.exists( LOG_FNAME ):
-    "Move old log file to log.txt.N"
-    n = 1
-    while True:
-        "Find a log file that doesn't exist"
-        f = "%s.old.%i" % (LOG_FNAME, n)
-        if not os.path.exists( f ):
-            break
-        n += 1
-    os.rename( LOG_FNAME, f )
-
 if not args.debug:
+    if os.path.exists( LOG_FNAME ):
+        "Move old log file to log.txt.N"
+        n = 1
+        while True:
+            "Find a log file that doesn't exist"
+            f = "%s.old.%i" % (LOG_FNAME, n)
+            if not os.path.exists( f ):
+                break
+            n += 1
+        os.rename( LOG_FNAME, f )
+
     "Put stdout and stderr into log file"
     sys.stderr = sys.stdout = open( LOG_FNAME, "at", 1)
 
@@ -72,7 +72,8 @@ try:
         raise Exception( "No robot code found." )
 
     # Hack in launch of display: begins with "Press button to start" message
-    disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
+    if not args.debug:
+        disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
     # X needs DBUS to feed it input events, so make sure it's started
     # before running the input grabber
@@ -82,8 +83,9 @@ try:
     if not args.immed_start:
         subprocess.call("./bin/pyenv_start")
 
-    # Feed display a newline once code it to be launched
-    disp.stdin.write("\n")
+    if not args.debug:
+        "Feed display a newline now that code is to be run"
+        disp.stdin.write("\n")
 
     import addhack, robot
     addhack.add_queued()
