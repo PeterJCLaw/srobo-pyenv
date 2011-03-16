@@ -32,7 +32,3 @@ def start(logfile):
         (sricd is required to allow button events to get to the screen
         when not in debug mode)"""
         __sr_cleanup_funcs.append( (True, _kill) )
-
-    # Wait two seconds for enumeration and stuff to complete
-    # (otherwise libsric clients will get no devices listed)
-    time.sleep(2)
