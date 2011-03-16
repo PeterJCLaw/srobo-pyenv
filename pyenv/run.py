@@ -24,6 +24,18 @@ if not os.path.exists( args.log_dir ):
     os.mkdir( args.log_dir )
 
 LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
+
+if os.path.exists( LOG_FNAME ):
+    "Move old log file to log.txt.N"
+    n = 1
+    while True:
+        "Find a log file that doesn't exist"
+        f = "%s.old.%i" % (LOG_FNAME, n)
+        if not os.path.exists( f ):
+            break
+        n += 1
+    os.rename( LOG_FNAME, f )
+
 if not args.debug:
     "Put stdout and stderr into log file"
     sys.stderr = sys.stdout = open( LOG_FNAME, "at", 1)
