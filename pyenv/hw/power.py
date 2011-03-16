@@ -8,10 +8,49 @@ CMD_SET_LEDS = 7
 CMD_SET_MOTOR_RAIL = 8
 CMD_GET_LEDS = 9
 
+class LedList(object):
+    def __init__(self, dev=None):
+        self.dev = dev
+
+    def __len__(self):
+        return 3
+
+    def __setitem__(self, idx, val):
+        if idx > 2 or idx < 0:
+            raise IndexError("The powerboard only has 3 LEDs")
+
+        # Fetch current status of led
+        r = self._get_leds()
+        bit = bool( r & (1 << idx) )
+
+        # Normalise val
+        val = bool(val)
+
+        if (bit != val):
+            flags = r & (~(1 << idx))
+            if val:
+                flags |= (1 << idx)
+            tx = [ CMD_SET_LEDS, flags ]
+            self.dev.txrx( tx )
+
+    def __getitem__(self, idx):
+        if idx > 2 or idx < 0:
+            raise IndexError("The powerboard only has 3 LEDs")
+
+        r = self._get_leds()
+        return bool( r & (1 << idx) )
+
+    def _get_leds(self):
+        """Read the state of all the LEDs.
+        Return the values in a bitmask."""
+        tx = [ CMD_GET_LEDS ]
+        rx = self.dev.txrx( tx )
+        return rx[0]
+
 class Power:
     def __init__(self, dev):
         self.dev = dev
-        self.led = Power.LedList('I', [0, 0, 0], dev)
+        self.led = LedList(dev)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
@@ -41,41 +80,6 @@ class Power:
             tx.append( 5 )
 
         self.dev.txrx( tx )
-
-    class LedList(list):
-        def __new__(cls, typeclass, init_values, dev):
-            return list.__new__(cls, typeclass, init_values)
-
-        def __init__(self, typeclass, init_values, dev=None):
-            # We receive a deprecation warning if the following is enabled
-            # list.__init__(self, typeclass, init_values)
-            self.dev = dev
-
-        def __setitem__(self, idx, val):
-            # Fetch current status of led
-            tx = [ CMD_GET_LEDS ]
-            rx = self.dev.txrx( tx )
-            bit = rx[0] & (1 << idx)
-            bit = bit >> idx
-
-            # Normalise the value of val
-            if val != 0:
-                val = 1
-
-            if (bit != val):
-                flags = rx[0] & (~(1 << idx))
-                flags |= (val << idx)
-                tx = [ CMD_SET_LEDS, flags ]
-                self.dev.txrx( tx )
-
-        def __getitem__(self, idx):
-            tx = [ CMD_GET_LEDS ]
-            rx = self.dev.txrx( tx )
-            if rx[0] & (1 << idx):
-                return 1
-            else:
-                return 0
-
 
 ps = pysric.PySric()
 power = None
