@@ -1,9 +1,6 @@
 #!/bin/bash
 
-if [ -f pyenv.zip ]
-    then
-    rm -f pyenv.zip
-fi
+rm -f pyenv.zip
 
 td=`mktemp -d`
 
