@@ -12,6 +12,7 @@ cd $td
 # Remove unecessary files
 find -name '.gitignore' | xargs rm -f
 find -name '*.pyc' | xargs rm -f
+find -name '*~' | xargs rm -f
 
 # Strip binaries
 find -type f | while read fname
