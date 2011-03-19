@@ -1,20 +1,13 @@
+import pysric
 from events import Event
 import logging
 import poll
 
-ADDRESS = 0x24
-curout = 0
-
-# Get the identity from the board
-JOINTIO_IDENTIFY = 0
-# Set the outputs of the board
-JOINTIO_OUTPUT = 1
-# Read the board inputs in analogue form
-JOINTIO_INPUT = 2
-# Read the current digital output setting from the board.
-JOINTIO_OUTPUT_READ = 3
-# Read the inputs in digital form
-JOINTIO_INPUT_DIG = 4
+CMD_OUTPUT_SET = 0
+CMD_OUTPUT_GET = 1
+CMD_INPUT_A = 2
+CMD_INPUT_D = 3
+CMD_SMPS = 4
 
 class IOEventInfo:
     def __init__(self):
@@ -225,84 +218,113 @@ class AnaloguePin(IOPoll):
     def val(self):
         return readapin(self.num)
 
-class Pins:
-    def __init__(self):
-        pass
-    
-    ######## Container Operators ########
-    def __getitem__(self, n):
-        "Return value of the pin"
-        return Pin(n)
+class InputPin(object):
+    def __init__(self, num, jio):
+        self.num = num
+        self.jio = jio
 
-    def __setitem__(self, n, v):
-        "Set the output"
-        setoutput(n,v)
+    @property
+    def a(self):
+        "Return the analogue reading for this pin"
+        v = self.jio._inputs_read_a()
+        return v[self.num]
+    
+    @property
+    def d(self):
+        "Return the digital reading of this pin"
+        v = self.jio._inputs_read_d()
+        return v[self.num]
+
+class OutputPin(object):
+    def __init__(self, num, jio):
+        self.num = num
+        self.jio = jio
+
+    @property
+    def d(self):
+        "Read the current value of the output"
+        return self.jio._output_get()[self.num]
+
+    @d.setter
+    def d(self, value):
+        "Set the value of an output pin"
+        # Get current outputs
+        v = self.jio._output_get_raw()
+        if value:
+            v |= (1<<self.num)
+        else:
+            v &= ~(1<<self.num)
+        self.jio._output_set(v)
 
 class OutputPins:
-    def __init__(self):
-        pass
+    def __init__(self, jio):
+        self.jio = jio
     
-    ######## Container Operators ########
     def __getitem__(self, n):
-        "Return value of the pin"
-        return Pin(n)
+        if n < 0 or n > 8:
+            raise InvalidPin("Pin out of range")
+        return OutputPin(n, self.jio)
 
-    def __setitem__(self, n, v):
-        "Set the output"
-        setoutput(n,v)
+class InputPins(object):
+    def __init__(self, jio):
+        self.jio = jio
 
-class AnaloguePins:
-    def __init__(self):
-        pass
-
-    ######## Container Operators ########
     def __getitem__(self, n):
-        "Return value of the pin"
-        return AnaloguePin(n)
+        if n < 0 or n > 8:
+            raise InvalidPin("Pin out of range")
+        return InputPin(n, self.jio)
 
-    def __setitem__(self, n, v):
-        "Set the output"
-        raise RuntimeError( "Cannot set value of input pins" )
+# setoutput took bit number and value as 0 or 1
+# readapin returned voltage as a float
+# readpin returned 0 or 1
 
-class Jointio:
-    def __init__(self):
-        self.pin = Pins()
-        self.opin = OutputPins()
-        self.apin = AnaloguePins()
+class JointIO(object):
+    def __init__(self, dev):
+        self.dev = dev
+        self.input = InputPins(self)
+        self.output = OutputPins(self)
 
-io = Jointio()
+    def _output_set(self, vals):
+        self.dev.txrx( [ CMD_OUTPUT_SET, vals ] )
 
-def setoutput(bit, value):
-    global curout
-    if bit > 3:
-        logging.error("Trying to set an invalid DIO pin.")
-    else:
-        if value == 0:
-            curout &= ~(1<<bit)
-        else:
-            curout |= (1<<bit)
+    def _output_get(self):
+        r = self.dev.txrx( [ CMD_OUTPUT_GET ] ) 
+        b = []
+        for x in range(0,8):
+            if r[0] & (1<<x):
+                b.append(1)
+            else:
+                b.append(0)
 
-        while True:
-            setbyte(ADDRESS, JOINTIO_OUTPUT, curout)
-            if getbyte(ADDRESS, JOINTIO_OUTPUT_READ) == curout:
-                break
+        return b
 
-def readapin(pin):
-    if pin >= 0 and pin < 8:
-	val = getblock(ADDRESS, JOINTIO_INPUT, 16)
-	bytes = [ord(x) for x in val]
-	word = (bytes[2*pin] << 8) | (bytes[2*pin+1] & 0xFF)
-    else:
-	raise InvalidPin("Pin Out of range")
-    return (float(word)/1023)*3.3	#return a voltage value
+    def _output_get_raw(self):
+        r = self.dev.txrx( [ CMD_OUTPUT_GET ] )
+        return r[0]
 
-def readpin(pin):
-    if pin >= 0 and pin < 8:
-        val = getbyte(ADDRESS, JOINTIO_INPUT_DIG)
-        if val & (1 << pin):
-            return 1
-	else:
-	    return 0
-    else:
-	raise InvalidPin("Pin out of range")
+    def _inputs_read_a(self):
+        r = self.dev.txrx( [ CMD_INPUT_A ] )
+        vals = []
+        for i in range(0, 16, 2):
+            v = r[i]
+            v |= (r[i+1] << 8)
 
+            vals.append(3.3 * (v/1024.0))
+        return vals
+
+    def _inputs_read_d(self):
+        r = self.dev.txrx( [ CMD_INPUT_D ] )
+        vals = []
+        for i in range(0,8):
+            if (r[0] & (1<<i)):
+                vals.append(1)
+            else:
+                vals.append(0)
+        return vals
+
+ps = pysric.PySric()
+io = []
+
+if pysric.SRIC_CLASS_JOINTIO in ps.devices:
+    for dev in ps.devices[ pysric.SRIC_CLASS_JOINTIO ]:
+        io.append( JointIO(dev) )
