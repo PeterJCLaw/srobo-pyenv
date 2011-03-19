@@ -284,6 +284,8 @@ class JointIO(object):
         self.input = InputPins(self)
         self.output = OutputPins(self)
 
+        self._smps_control(True)
+
     def _output_set(self, vals):
         self.dev.txrx( [ CMD_OUTPUT_SET, vals ] )
 
@@ -321,6 +323,14 @@ class JointIO(object):
             else:
                 vals.append(0)
         return vals
+
+    def _smps_control(self, on):
+        "Turn the smps on/off"
+        if on:
+            v = 1
+        else:
+            v = 0
+        self.dev.txrx( [ CMD_SMPS, v ] )
 
 ps = pysric.PySric()
 io = []
