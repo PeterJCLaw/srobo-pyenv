@@ -64,15 +64,17 @@ class IOOperator(poll.Poll):
         self.operands = al
 
     def __nonzero__(self):
-        "For when the operation gets casted into a bool"
+        "For when the operation gets cast into a bool"
         return self.eval() != None
 
     def gen_event(self, vals):
         pvals = {}
         for i in xrange(0, len(vals)):
             p = self.operands[i]
-            if isinstance(p, Pin) or isinstance(p, AnaloguePin):
-                pvals[ p.num ] = vals[i]
+
+            # TODO :(
+            # if isinstance(p, Pin) or isinstance(p, AnaloguePin):
+            #     pvals[ p.num ] = vals[i]
         return pvals
 
 class IOEqual(IOOperator):
@@ -169,55 +171,6 @@ class IOPoll(poll.Poll):
     def __ge__(self,o):
         return IOGreaterThanOrEqual( self, o )
 
-class Pin(IOPoll):
-    def __init__(self, num):
-        "num is the pin number we're dealing with"
-        self.num = num
-        # Initial value
-        self.ival = self.val()
-        IOPoll.__init__(self)
-
-    def eval(self):
-        v = self.val()
-        if v != self.ival:
-            self.ival = v
-            return IOEvent({self.num: v})
-        return None
-
-    def __repr__(self):
-        return "%i" % readpin(self.num)
-
-    def __str__(self):
-        return str(readpin(self.num))
-
-    def val(self):
-        return readpin(self.num)
-
-class AnaloguePin(IOPoll):
-    def __init__(self, num):
-        "num is the pin number we're dealing with"
-        self.num = num
-        self.ival = self.val()
-        IOPoll.__init__(self)
-
-    def eval(self):
-        v = self.val()
-        if v != self.ival:
-            return IOEvent({self.num: v})
-        return None
-
-    def __eq__(self,o):
-        raise CannotEquate("Analogue pins don't support the '==' operator.")
-
-    def __repr__(self):
-        return "%f" % readapin(self.num)
-
-    def __str__(self):
-        return "Pin(%i)" % self.num
-
-    def val(self):
-        return readapin(self.num)
-
 class InputPin(object):
     def __init__(self, num, jio):
         self.num = num
@@ -274,10 +227,6 @@ class InputPins(object):
             raise InvalidPin("Pin out of range")
         return InputPin(n, self.jio)
 
-# setoutput took bit number and value as 0 or 1
-# readapin returned voltage as a float
-# readpin returned 0 or 1
-
 class JointIO(object):
     def __init__(self, dev):
         self.dev = dev
@@ -332,9 +281,80 @@ class JointIO(object):
             v = 0
         self.dev.txrx( [ CMD_SMPS, v ] )
 
+class QueryInputPinDigital(IOPoll):
+    def __init__(self, num, jio):
+        "num is the pin number we're dealing with"
+        self.num = num
+        self.jio = jio
+
+        # Initial value
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        v = self.val()
+        if v != self.ival:
+            self.ival = v
+            return IOEvent({self.num: v})
+        return None
+
+    def val(self):
+        return self.jio.input[self.num].d
+
+class QueryInputPinAnalogue(IOPoll):
+    def __init__(self, num, jio):
+        "num is the pin number we're dealing with"
+        self.num = num
+        self.jio = jio
+
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        v = self.val()
+        if v != self.ival:
+            return IOEvent({self.num: v})
+        return None
+
+    def __eq__(self,o):
+        raise CannotEquate("Analogue pins don't support the '==' operator.")
+
+    def val(self):
+        return self.jio.input[self.num].a
+
+class QueryInputPin(object):
+    def __init__(self, num, jio):
+        self.num = num
+        self.jio = jio
+
+    @property
+    def a(self):
+        return QueryInputPinAnalogue(self.num, self.jio)
+
+    @property
+    def d(self):
+        return QueryInputPinDigital(self.num, self.jio)
+
+class QueryInputPins(object):
+    def __init__(self, jio):
+        self.jio = jio
+
+    def __getitem__(self, n):
+        if n < 0 or n > 8:
+            raise InvalidPin("Pin out of range")
+        return QueryInputPin(n, self.jio)
+
+class QueryJointIO(object):
+    def __init__(self, jio):
+        self.jio = jio
+        self.input = QueryInputPins(jio)
+
 ps = pysric.PySric()
 io = []
+queryio = []
 
 if pysric.SRIC_CLASS_JOINTIO in ps.devices:
     for dev in ps.devices[ pysric.SRIC_CLASS_JOINTIO ]:
-        io.append( JointIO(dev) )
+        jio = JointIO(dev)
+        io.append( jio )
+        queryio.append( QueryJointIO(jio) )
