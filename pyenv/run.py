@@ -8,7 +8,7 @@ __builtin__.__sr_trampoline = True
 __builtin__.__sr_cleanup_funcs = []
 
 import optparse, sys, logging, os, os.path, traceback
-import trampoline, sricd
+import trampoline, sricd, pysric
 import subprocess
 
 parser = optparse.OptionParser( description = "Run some robot code." )
@@ -86,6 +86,14 @@ try:
     if not args.debug:
         "Feed display a newline now that code is to be run"
         disp.stdin.write("\n")
+
+    # List the enumerated boards in the log
+    print "Found the following devices:"
+    ps = pysric.PySric()
+    for devclass in ps.devices:
+        if devclass in [pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR, pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO]:
+            for dev in ps.devices[devclass]:
+                print dev
 
     import addhack, robot
     addhack.add_queued()
