@@ -11,5 +11,5 @@ class AddCRWriter(object):
         self._actual = actual
 
     def write(self, string):
-        string = string.replace('\n', 'bees\r\n')
+        string = string.replace('\n', '\r\n')
         self._actual.write(string)
