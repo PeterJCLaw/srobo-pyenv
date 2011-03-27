@@ -9,6 +9,7 @@ __builtin__.__sr_cleanup_funcs = []
 
 import optparse, sys, logging, os, os.path, traceback
 import trampoline, sricd, pysric
+import addcr
 import subprocess
 
 parser = optparse.OptionParser( description = "Run some robot code." )
@@ -38,7 +39,7 @@ if not args.debug:
         os.rename( LOG_FNAME, f )
 
     "Put stdout and stderr into log file"
-    sys.stderr = sys.stdout = open( LOG_FNAME, "at", 1)
+    sys.stderr = sys.stdout = addcr.AddCRWriter(open( LOG_FNAME, "at", 1))
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
