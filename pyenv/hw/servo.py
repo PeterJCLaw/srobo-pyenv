@@ -58,10 +58,10 @@ class Servo(object):
         self.dev.txrx(tx)
 
 ps = pysric.PySric()
-servo = []
+pwm = []
 
 if pysric.SRIC_CLASS_SERVO in ps.devices:
 
     for dev in ps.devices[ pysric.SRIC_CLASS_SERVO ]:
         servo_dev = Servo(dev)
-        servo.append( servo_dev )
+        pwm.append( servo_dev )

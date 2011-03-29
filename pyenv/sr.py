@@ -2,7 +2,7 @@ from hw.motor import motor
 from hw.power import power
 from hw.vis import vision
 from hw.jointio import io, queryio as _queryio
-from hw.servo import servo
+from hw.servo import pwm
 from hw.colours import *
 
 from poll import And, Or, TimePoll
