@@ -25,6 +25,7 @@ if not os.path.exists( args.log_dir ):
     os.mkdir( args.log_dir )
 
 LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
+ROBOT_RUNNING = "/tmp/robot-running"
 
 if not args.debug:
     if os.path.exists( LOG_FNAME ):
@@ -74,6 +75,16 @@ try:
 
     # Hack in launch of display: begins with "Press button to start" message
     if not args.debug:
+        subprocess.Popen("./bin/matchbox-window-manager -use_titlebar no -use_cursor no",
+                         shell = True)
+
+        if os.path.isfile(ROBOT_RUNNING):
+            "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
+            os.remove(ROBOT_RUNNING)
+
+        subprocess.Popen("./bin/sr-ts %s" % ROBOT_RUNNING,
+                         shell = True)
+
         disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
     # X needs DBUS to feed it input events, so make sure it's started
@@ -85,7 +96,10 @@ try:
         subprocess.call("./bin/pyenv_start")
 
     if not args.debug:
-        "Feed display a newline now that code is to be run"
+        #Tell things that code is being run
+        open(ROBOT_RUNNING,"w").close()
+
+        #Feed display a newline now that code is to be run
         disp.stdin.write("\n")
 
     # List the enumerated boards in the log
