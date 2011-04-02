@@ -78,7 +78,7 @@ class SricDevice(Structure):
 class SricFrame(Structure):
     _fields_ = [("address", c_int), ("note", c_int),
             ("payload_length", c_int),
-            ("payload", c_byte * 64)]
+            ("payload", c_ubyte * 64)]
 
     def __repr__(self):
         if self.payload_length:
@@ -171,7 +171,7 @@ class PySric(object):
 
         for i in range(0, len(data)):
             "Fill the data in"
-            txframe.payload[i] = c_byte(data[i])
+            txframe.payload[i] = c_ubyte(data[i])
 
         rxframe = SricFrame()
 
@@ -183,5 +183,5 @@ class PySric(object):
         if r:
             raise sric_errors[ self.libsric.sric_get_error(self.sric_ctx) ]
 
-        resp = [rxframe.payload[i] for i in range(0,rxframe.payload_length)]
+        resp = [int(rxframe.payload[i]) for i in range(0,rxframe.payload_length)]
         return resp
