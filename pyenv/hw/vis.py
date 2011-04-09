@@ -7,6 +7,8 @@ from events import Event
 import poll
 from colours import *
 
+VISION_HEIGHT = VISION_WIDTH = 100
+
 class VisionStruct:
     pass
 
@@ -80,7 +82,7 @@ class VisProc:
             if select.select([self.fifo], [], [], 0) == ([], [], []):
                 #No more data right now
                 break;
-                    
+
             self.text += os.read(self.fifo, 1)
 
         if self.text.find("BLOBS\n") == -1 :
@@ -90,7 +92,7 @@ class VisProc:
         strlist = self.text.split("BLOBS\n", 1)
         self.text = strlist[1]
         lines = strlist[0].strip().split('\n')
-     
+
         if len(lines) == 0:
             logging.error("hueblobs returned nothing")
         else:
