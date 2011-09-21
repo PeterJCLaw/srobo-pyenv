@@ -55,6 +55,10 @@ try:
     for k,v in envs.iteritems():
         os.environ[k] = v
 
+    # Hack around zip not supporting file permissions...
+    subprocess.call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+                     shell = True )
+
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
 #    import fw
