@@ -55,12 +55,6 @@ try:
     for k,v in envs.iteritems():
         os.environ[k] = v
 
-    # Need to start dbus, have to manually remove the pid file due to dbus being
-    # killed when the stick is removed
-    if os.path.isfile("/var/run/messagebus.pid"):
-        os.remove("/var/run/messagebus.pid")
-    dbus_starter = subprocess.Popen(["/etc/init.d/dbus-1", "start"])
-
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
 #    import fw
@@ -87,9 +81,6 @@ try:
 
         disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
-    # X needs DBUS to feed it input events, so make sure it's started
-    # before running the input grabber
-    dbus_starter.wait()
     subprocess.Popen("./bin/srinput")
 
     if not args.immed_start:
