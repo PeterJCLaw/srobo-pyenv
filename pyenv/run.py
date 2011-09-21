@@ -75,7 +75,7 @@ try:
 
     # Hack in launch of display: begins with "Press button to start" message
     if not args.debug:
-        subprocess.Popen("./bin/matchbox-window-manager -use_titlebar no -use_cursor no",
+        subprocess.Popen("matchbox-window-manager -use_titlebar no -use_cursor no",
                          shell = True)
 
         if os.path.isfile(ROBOT_RUNNING):
