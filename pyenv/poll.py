@@ -1,5 +1,3 @@
-from time_event import *
-
 class Poll:
     def __init__(self):
         pass
@@ -24,20 +22,6 @@ class Poll:
 
     def __str__(self):
         return "Nothing Poll" 
-
-class TimePoll(Poll):
-    def __init__(self, t):
-        self.start = time.time()
-        self.t = t
-        Poll.__init__(self)
-
-    def eval(self):
-        if (time.time() - self.start) > self.t:
-            return TimeoutEvent(self.t)
-        return None
-
-    def __str__(self):
-        return "TimePoll(%s)" % str(self.t)
 
 def convert_polls(polls):
     res = []

@@ -5,11 +5,8 @@ from hw.jointio import io, queryio as _queryio
 from hw.servo import pwm
 from hw.colours import *
 
-from poll import And, Or, TimePoll
+from poll import And, Or
 
 class query:
-    timeout = TimePoll
     io = _queryio
-
-from time_event import timeout
 
