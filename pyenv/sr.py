@@ -12,5 +12,4 @@ class query:
     io = _queryio
 
 from time_event import timeout
-from addhack import add_coroutine, coroutine
 

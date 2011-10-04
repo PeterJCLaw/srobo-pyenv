@@ -97,13 +97,8 @@ try:
             for dev in ps.devices[devclass]:
                 print dev
 
-    import addhack, robot
-    addhack.add_queued()
-    addhack.add_coroutine( robot.main )
-
     print "Starting robot code"
-    t = trampoline.Trampoline()
-    t.schedule()
+    print "TODO: Start robot code"
 except:
     print "Error: "
     traceback.print_exc(file=sys.stderr)
