@@ -1,6 +1,6 @@
 # Utility functions for starting/stopping sricd
 from subprocess import Popen
-import __builtin__, os, signal
+import os, signal
 import time, sys
 PID_FILE = "/tmp/sricd.pid"
 
@@ -26,9 +26,3 @@ def start(logfile):
                stdin = open("/dev/null", "r"),
                stdout = out, stderr = out, shell = True )
     p.wait()
-
-    if hasattr(__builtin__, "__sr_trampoline"):
-        """We're in the trampoline -- kill sricd on exit in debug mode
-        (sricd is required to allow button events to get to the screen
-        when not in debug mode)"""
-        __sr_cleanup_funcs.append( (True, _kill) )

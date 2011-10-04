@@ -1,12 +1,4 @@
 #!/usr/bin/python
-import __builtin__
-# Let things know that they're running in the trampoline
-__builtin__.__sr_trampoline = True
-# List of functions to call on abort (can be tuples with args as items after first)
-# Tuples with form ( debug, func, [args...] )
-#  - if debug is true, then will only be called when in debug mode
-__builtin__.__sr_cleanup_funcs = []
-
 import optparse, sys, logging, os, os.path, traceback
 import trampoline, sricd, pysric
 import addcr
@@ -115,11 +107,3 @@ try:
 except:
     print "Error: "
     traceback.print_exc(file=sys.stderr)
-
-print "Calling %i cleanup functions" % (len(__sr_cleanup_funcs))
-for f in __sr_cleanup_funcs:
-    if isinstance( f, tuple ):
-        if (not f[0]) or args.debug:
-            f[1](*f[2:])
-    else:
-        f()
