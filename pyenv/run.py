@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, logging, os, os.path, traceback
-import trampoline, sricd, pysric
+import sricd, pysric
 import addcr
 import subprocess
 
