@@ -18,6 +18,8 @@ if not os.path.exists( args.log_dir ):
 
 LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
 ROBOT_RUNNING = "/tmp/robot-running"
+USER_DIR = os.path.join( os.path.dirname( __file__ ), "user" )
+USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 
 if not args.debug:
     if os.path.exists( LOG_FNAME ):
@@ -56,10 +58,7 @@ try:
 #    import fw
 #    fw.update_all()
 
-    if os.path.exists( "robot.zip" ):
-        "robot.zip exists, everyone's happy"
-        sys.path.insert(0, os.path.join(os.curdir, "robot.zip"))
-    elif not os.path.exists( "robot.py" ):
+    if not os.path.exists( USER_EXEC ):
         "No robot code around"
         raise Exception( "No robot code found." )
 
@@ -98,7 +97,15 @@ try:
                 print dev
 
     print "Starting robot code"
-    print "TODO: Start robot code"
+    robot = subprocess.Popen( [USER_EXEC],
+                              executable = USER_EXEC,
+                              cwd = USER_DIR,
+                              stdout = sys.stdout,
+                              stderr = sys.stderr )
+
+    r = robot.wait()
+    print "Robot code exited with code %i" % r
+
 except:
     print "Error: "
     traceback.print_exc(file=sys.stderr)
