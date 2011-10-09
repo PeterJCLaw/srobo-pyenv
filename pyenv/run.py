@@ -3,6 +3,7 @@ import optparse, sys, logging, os, os.path, traceback
 import sricd, pysric
 import addcr
 import subprocess
+from subprocess import Popen, call
 
 parser = optparse.OptionParser( description = "Run some robot code." )
 parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
@@ -56,8 +57,8 @@ try:
     os.environ["PATH"] += ":" + BIN_DIR
 
     # Hack around zip not supporting file permissions...
-    subprocess.call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
-                     shell = True )
+    call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+          shell = True )
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
@@ -70,22 +71,22 @@ try:
 
     # Hack in launch of display: begins with "Press button to start" message
     if not args.debug:
-        subprocess.Popen("matchbox-window-manager -use_titlebar no -use_cursor no",
-                         shell = True)
+        Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+               shell = True )
 
         if os.path.isfile(ROBOT_RUNNING):
             "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
             os.remove(ROBOT_RUNNING)
 
-        subprocess.Popen("sr-ts %s" % ROBOT_RUNNING,
-                         shell = True)
+        Popen( "sr-ts %s" % ROBOT_RUNNING,
+               shell = True )
 
-        disp = subprocess.Popen(["squidge", LOG_FNAME], stdin=subprocess.PIPE)
+        disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
 
-    subprocess.Popen("srinput")
+    Popen( "srinput" )
 
     if not args.immed_start:
-        subprocess.call("pyenv_start")
+        call("pyenv_start")
 
     if not args.debug:
         #Tell things that code is being run
@@ -103,11 +104,11 @@ try:
                 print dev
 
     print "Starting robot code"
-    robot = subprocess.Popen( [USER_EXEC],
-                              executable = USER_EXEC,
-                              cwd = USER_DIR,
-                              stdout = sys.stdout,
-                              stderr = sys.stderr )
+    robot = Popen( [USER_EXEC],
+                   executable = USER_EXEC,
+                   cwd = USER_DIR,
+                   stdout = sys.stdout,
+                   stderr = sys.stderr )
 
     r = robot.wait()
     print "Robot code exited with code %i" % r
