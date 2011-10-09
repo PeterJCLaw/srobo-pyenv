@@ -11,7 +11,7 @@ def find_pyenv_rev( reporoot ):
 def add_pyenv_rev_file( reporoot, tmpd ):
     "Write a file into tmpd indicating the pyenv revision"
 
-    f = open( os.path.join( reporoot, ".pyenv-rev" ), "w" )
+    f = open( os.path.join( tmpd, ".pyenv-rev" ), "w" )
     f.write( "%s\n" % find_pyenv_rev(reporoot) )
     f.close()
 
