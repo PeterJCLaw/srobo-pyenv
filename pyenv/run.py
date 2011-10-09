@@ -17,13 +17,15 @@ args, trailing_args = parser.parse_args()
 if not os.path.exists( args.log_dir ):
     os.mkdir( args.log_dir )
 
-LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
+LOG_DIR = args.log_dir
+LOG_FNAME = os.path.join( LOG_DIR, "log.txt" )
 ROBOT_RUNNING = "/tmp/robot-running"
 PROG_DIR = os.path.dirname( __file__ )
 BIN_DIR = os.path.join( PROG_DIR, "bin" )
 LIB_DIR = os.path.join( PROG_DIR, "lib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
+START_FIFO = "/tmp/robot-start"
 
 if not args.debug:
     if os.path.exists( LOG_FNAME ):
@@ -101,7 +103,7 @@ try:
                 print dev
 
     print "Starting robot code"
-    robot = Popen( [USER_EXEC],
+    robot = Popen( [USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
                    executable = USER_EXEC,
                    cwd = USER_DIR,
                    stdout = sys.stdout,
