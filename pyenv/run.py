@@ -62,9 +62,6 @@ try:
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
-#    import fw
-#    fw.update_all()
-
     if not os.path.exists( USER_EXEC ):
         "No robot code around"
         raise Exception( "No robot code found." )
