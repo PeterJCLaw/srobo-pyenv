@@ -74,15 +74,15 @@ try:
             "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
             os.remove(ROBOT_RUNNING)
 
-        subprocess.Popen("./bin/sr-ts %s" % ROBOT_RUNNING,
+        subprocess.Popen("sr-ts %s" % ROBOT_RUNNING,
                          shell = True)
 
-        disp = subprocess.Popen(["./bin/squidge", LOG_FNAME], stdin=subprocess.PIPE)
+        disp = subprocess.Popen(["squidge", LOG_FNAME], stdin=subprocess.PIPE)
 
-    subprocess.Popen("./bin/srinput")
+    subprocess.Popen("srinput")
 
     if not args.immed_start:
-        subprocess.call("./bin/pyenv_start")
+        subprocess.call("pyenv_start")
 
     if not args.debug:
         #Tell things that code is being run

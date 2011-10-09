@@ -22,7 +22,7 @@ def start(logfile):
     out = open( logfile, "a" )
     print >>out, "-" * 80
 
-    p = Popen( "./bin/sricd -p /tmp/sricd.pid -d -u /dev/ttyS1 -v",
+    p = Popen( "sricd -p /tmp/sricd.pid -d -u /dev/ttyS1 -v",
                stdin = open("/dev/null", "r"),
                stdout = out, stderr = out, shell = True )
     p.wait()
