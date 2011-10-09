@@ -49,6 +49,9 @@ try:
     for k,v in envs.iteritems():
         os.environ[k] = v
 
+    # Extend PATH to include our bin directory
+    os.environ["PATH"] += ":" + os.path.join( os.path.dirname( __file__ ), "bin" )
+
     # Hack around zip not supporting file permissions...
     subprocess.call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
                      shell = True )
