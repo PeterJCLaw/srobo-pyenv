@@ -41,7 +41,10 @@ def strip_binary( elfpath ):
     if mach not in strippers:
         return
 
-    subprocess.check_call( "%s '%s'" % ( strippers[mach], elfpath ), shell = True )
+    # Ignore errors: It's non-fatal if stuff doesn't strip
+    err = open("/dev/null", "w")
+    subprocess.call( "%s '%s'" % ( strippers[mach], elfpath ), shell = True,
+                         stdout = err, stderr = err )
 
 def strip_binaries( tmpd ):
     "Strip debug symbols from all the ARM binaries"
