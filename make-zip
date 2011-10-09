@@ -1,39 +1,95 @@
-#!/bin/bash
+#!/usr/bin/env python
+import os, sys, tempfile, subprocess, shutil, re
 
-rm -f pyenv.zip
+def find_pyenv_rev( reporoot ):
+    "Return the revision of pyenv"
 
-td=`mktemp -d`
+    ver = subprocess.check_output( "git rev-list --max-count=1 HEAD",
+                                   cwd = reporoot, shell = True )
+    return ver.strip()
 
-cp -r pyenv/* $td
-target_zip=`pwd`/pyenv.zip
+def add_pyenv_rev_file( reporoot, tmpd ):
+    "Write a file into tmpd indicating the pyenv revision"
 
-cd $td
+    f = open( os.path.join( reporoot, ".pyenv-rev" ), "w" )
+    f.write( "%s\n" % find_pyenv_rev(reporoot) )
+    f.close()
 
-# Remove unecessary files
-find -name '.gitignore' | xargs rm -f
-find -name '*.pyc' | xargs rm -f
-find -name '*~' | xargs rm -f
+def remove_gunk( tmpd ):
+    "Remove unnecessary files"
+    rem = [ ".gitignore", "*.pyc", "*~" ]
+    r = " -o ".join( [ "-name '%s' -print0 " % x for x in rem ] )
 
-# Strip binaries
-find -type f | while read fname
-do
-    if [[ `file $fname | grep ELF` == "" ]]
-	then
-	# It's not an ELF
-	continue
-    fi
+    assert subprocess.call( "find %s | xargs -0 rm -f" % r, cwd = tmpd, shell = True ) == 0
 
-    # Find out elf type
-    etype=`readelf -h $fname | grep 'Machine:'`
+def get_elf_mach( elfname ):
+    "Return the machine that the given ELF is for"
+    r = re.compile( "Machine:\s*(.+)$" )
 
-    if [[ `echo $etype | grep msp430` != "" ]]
-	then
-	msp430-strip $fname
-    elif [[ `echo $etype | grep ARM` != "" ]]
-	then
-	arm-angstrom-linux-gnueabi-strip $fname
-    fi
-done
+    o = subprocess.check_output( "readelf -h '%s' | grep 'Machine:'" % elfname, shell = True )
 
-zip -qr $target_zip ./
-rm -rf $td
+    mach = r.search( o ).group(1)
+    return mach
+
+def strip_binary( elfpath ):
+    "Strip the given binary"
+
+    strippers = { "Texas Instruments msp430 microcontroller": "msp430-strip",
+                  "ARM": "arm-angstrom-linux-gnueabi-strip" }
+
+    mach = get_elf_mach( elfpath )
+    if mach not in strippers:
+        return
+
+    subprocess.check_call( "%s '%s'" % ( strippers[mach], elfpath ), shell = True )
+
+def strip_binaries( tmpd ):
+    "Strip debug symbols from all the ARM binaries"
+
+    for dirpath, dirnames, filenames in os.walk(tmpd):
+        for fname in filenames:
+            fpath = os.path.join( dirpath, fname )
+
+            ftype = subprocess.check_output( "file '%s'" % fpath, shell = True )
+
+            if "ELF" in ftype:
+                "It's an ELF file"
+                strip_binary(fpath)
+
+if len(sys.argv) != 3:
+    print >>sys.stderr, "Usage: make-zip USER_CODE_DIR OUTPUT_ZIP"
+    exit(1)
+
+USER_CODE_DIR, OUTPUT_ZIP = sys.argv[1:]
+
+if not os.path.isdir( USER_CODE_DIR ):
+    print >>sys.stderr, "Error: Supplied user directory path is not a directory."
+    exit(1)
+
+REPO_ROOT = os.path.dirname( __file__ )
+PYENV_DIR = os.path.join( REPO_ROOT, "pyenv" )
+assert os.path.isdir( PYENV_DIR )
+
+# Temporary directory for constructing everything inside
+tmpd = tempfile.mkdtemp( suffix="-pyenv" )
+
+assert subprocess.call( "cp -r %s/* %s" % (PYENV_DIR, tmpd),
+                        shell = True ) == 0
+
+add_pyenv_rev_file( REPO_ROOT, tmpd )
+remove_gunk( tmpd )
+strip_binaries( tmpd )
+
+# Copy in the user's code
+subprocess.check_call( ["cp", "-r", USER_CODE_DIR, os.path.join( tmpd, "user" )] )
+
+# Temporary directory for the zipfile to reside in
+ziptmpd = tempfile.mkdtemp( suffix="-pyenv" )
+tmpzip = os.path.join( ziptmpd, "robot.zip" )
+
+subprocess.check_call( ["zip", "-9qr", tmpzip, "./"], cwd = tmpd )
+shutil.move( tmpzip, OUTPUT_ZIP )
+
+shutil.rmtree( ziptmpd )
+shutil.rmtree( tmpd )
+
