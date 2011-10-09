@@ -91,6 +91,10 @@ ziptmpd = tempfile.mkdtemp( suffix="-pyenv" )
 tmpzip = os.path.join( ziptmpd, "robot.zip" )
 
 subprocess.check_call( ["zip", "-9qr", tmpzip, "./"], cwd = tmpd )
+
+if os.path.exists( OUTPUT_ZIP ):
+    os.unlink( OUTPUT_ZIP )
+
 shutil.move( tmpzip, OUTPUT_ZIP )
 
 shutil.rmtree( ziptmpd )
