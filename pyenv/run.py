@@ -18,7 +18,10 @@ if not os.path.exists( args.log_dir ):
 
 LOG_FNAME = os.path.join( args.log_dir, "log.txt" )
 ROBOT_RUNNING = "/tmp/robot-running"
-USER_DIR = os.path.join( os.path.dirname( __file__ ), "user" )
+PROG_DIR = os.path.dirname( __file__ )
+BIN_DIR = os.path.join( PROG_DIR, "bin" )
+LIB_DIR = os.path.join( PROG_DIR, "lib" )
+USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 
 if not args.debug:
@@ -43,14 +46,14 @@ logging.basicConfig(level=logging.DEBUG,
 print "Initialising..."
 try:
     # Environment variables that we want:
-    envs = { "PYSRIC_LIBDIR": os.path.join( os.getcwd(), "lib" ),
-             "LD_LIBRARY_PATH": os.path.join( os.getcwd(), "lib" ),
+    envs = { "PYSRIC_LIBDIR": LIB_DIR,
+             "LD_LIBRARY_PATH": LIB_DIR,
              "DISPLAY": ":0.0" }
     for k,v in envs.iteritems():
         os.environ[k] = v
 
     # Extend PATH to include our bin directory
-    os.environ["PATH"] += ":" + os.path.join( os.path.dirname( __file__ ), "bin" )
+    os.environ["PATH"] += ":" + BIN_DIR
 
     # Hack around zip not supporting file permissions...
     subprocess.call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
