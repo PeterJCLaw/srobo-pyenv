@@ -80,7 +80,7 @@ try:
         os.remove(ROBOT_RUNNING)
 
     # Start the task-switcher
-    Popen( "sr-ts %s" % ROBOT_RUNNING,  shell = True )
+    Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
     # Start the GUI
     disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
     # Funnel button presses through to X
