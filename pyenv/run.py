@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, traceback
-import sricd, pysric, json
+import sricd, json
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -95,15 +95,6 @@ try:
 
     #Feed display a newline now that code is to be run
     disp.stdin.write("\n")
-
-    # TODO: Move this into Robot constructor
-    # List the enumerated boards in the log
-    print "Found the following devices:"
-    ps = pysric.PySric()
-    for devclass in ps.devices:
-        if devclass in [pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR, pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO]:
-            for dev in ps.devices[devclass]:
-                print dev
 
     # Ready for user code to execute, send it useful info:
     if not os.path.exists( START_FIFO ):

@@ -1,11 +1,23 @@
 import json, sys, optparse, time, os
+import pysric
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
 
     def __init__(self):
+        self._dump_bus()
         self._parse_cmdline()
         self._wait_start()
+
+    def _dump_bus(self):
+        "Write the contents of the SRIC bus out to stdout"
+        print "Found the following devices:"
+        ps = pysric.PySric()
+        for devclass in ps.devices:
+            if devclass in [ pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR,
+                             pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO ]:
+                for dev in ps.devices[devclass]:
+                    print dev
 
     def _parse_cmdline(self):
         "Parse the command line arguments"
