@@ -67,8 +67,8 @@ try:
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
-    robot = Popen( [USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
-                   executable = USER_EXEC,
+    robot = Popen( ["python", "-m", "sr.loggrok",
+                    USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
                    cwd = USER_DIR,
                    stdout = sys.stdout,
                    stderr = sys.stderr )
