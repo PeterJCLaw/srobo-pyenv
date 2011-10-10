@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, traceback
-import sricd, pysric
+import sricd, pysric, json
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -102,6 +102,14 @@ try:
         if devclass in [pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR, pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO]:
             for dev in ps.devices[devclass]:
                 print dev
+
+    # Ready for user code to execute, send it useful info:
+    if not os.path.exists( START_FIFO ):
+        os.mkfifo( START_FIFO )
+    f = open( START_FIFO, "w" )
+    # Hard-coded data for the moment
+    f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
+    f.close()
 
     r = robot.wait()
     print "Robot code exited with code %i" % r
