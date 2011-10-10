@@ -17,7 +17,7 @@ def add_pyenv_rev_file( reporoot, tmpd ):
 
 def remove_gunk( tmpd ):
     "Remove unnecessary files"
-    rem = [ ".gitignore", "*.pyc", "*~" ]
+    rem = [ ".gitignore", "*.pyc", "*~", "#*#", "log.txt*" ]
     r = " -o ".join( [ "-name '%s' -print0 " % x for x in rem ] )
 
     assert subprocess.call( "find %s | xargs -0 rm -f" % r, cwd = tmpd, shell = True ) == 0
