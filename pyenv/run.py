@@ -64,6 +64,12 @@ try:
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
+    robot = Popen( [USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
+                   executable = USER_EXEC,
+                   cwd = USER_DIR,
+                   stdout = sys.stdout,
+                   stderr = sys.stderr )
+
     Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
            shell = True )
 
@@ -71,13 +77,15 @@ try:
         "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
         os.remove(ROBOT_RUNNING)
 
+    # Start the task-switcher
     Popen( "sr-ts %s" % ROBOT_RUNNING,  shell = True )
-
+    # Start the GUI
     disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
-
+    # Funnel button presses through to X
     Popen( "srinput" )
 
     if not args.immed_start:
+        "Wait for the button press to happen"
         call("pyenv_start")
 
     #Tell things that code is being run
@@ -86,6 +94,7 @@ try:
     #Feed display a newline now that code is to be run
     disp.stdin.write("\n")
 
+    # TODO: Move this into Robot constructor
     # List the enumerated boards in the log
     print "Found the following devices:"
     ps = pysric.PySric()
@@ -93,13 +102,6 @@ try:
         if devclass in [pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR, pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO]:
             for dev in ps.devices[devclass]:
                 print dev
-
-    print "Starting robot code"
-    robot = Popen( [USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
-                   executable = USER_EXEC,
-                   cwd = USER_DIR,
-                   stdout = sys.stdout,
-                   stderr = sys.stderr )
 
     r = robot.wait()
     print "Robot code exited with code %i" % r
