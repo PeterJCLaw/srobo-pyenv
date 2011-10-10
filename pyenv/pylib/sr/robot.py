@@ -1,6 +1,7 @@
 # Copyright Robert Spanton 2011
 import json, sys, optparse, time, os
 import pysric, tssric
+import motor
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
@@ -9,6 +10,8 @@ class Robot(object):
         self.sricman = tssric.SricCtxMan()
 
         self._dump_bus()
+        self._init_devs()
+
         self._parse_cmdline()
         if wait_start:
             self._wait_start()
@@ -58,3 +61,13 @@ class Robot(object):
         if self.zone < 0 or self.zone > 3:
             raise Exception( "zone must be in range 0-3 inclusive -- value of %i is invalid" % self.zone )
 
+    def _init_devs(self):
+        "Initialise the attributes for accessing devices"
+
+        # Motors:
+        self.motors = []
+        if pysric.SRIC_CLASS_MOTOR in self.sricman.devices:
+            for dev in self.sricman.devices[ pysric.SRIC_CLASS_MOTOR ]:
+                self.motors.append( motor.Motor( dev ) )
+
+        

@@ -55,14 +55,3 @@ class Motor(object):
         if self.target == 0:
             "Implement the new braking setting"
             self.target = 0
-
-ps = pysric.PySric()
-motor = []
-
-def _stop_motor( dev ):
-    dev.target = 0
-
-if pysric.SRIC_CLASS_MOTOR in ps.devices:
-    for dev in ps.devices[ pysric.SRIC_CLASS_MOTOR ]:
-        motor_dev = Motor(dev)
-        motor.append( motor_dev )
