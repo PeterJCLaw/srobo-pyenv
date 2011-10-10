@@ -20,7 +20,7 @@ if not os.path.exists( args.log_dir ):
 LOG_DIR = args.log_dir
 LOG_FNAME = os.path.join( LOG_DIR, "log.txt" )
 ROBOT_RUNNING = "/tmp/robot-running"
-PROG_DIR = os.path.dirname( __file__ )
+PROG_DIR = os.path.abspath( os.path.dirname( __file__ ) )
 BIN_DIR = os.path.join( PROG_DIR, "bin" )
 LIB_DIR = os.path.join( PROG_DIR, "lib" )
 PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
