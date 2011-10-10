@@ -58,37 +58,33 @@ try:
     call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
           shell = True )
 
-    sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
-
     if not os.path.exists( USER_EXEC ):
         "No robot code around"
         raise Exception( "No robot code found." )
 
-    # Hack in launch of display: begins with "Press button to start" message
-    if not args.debug:
-        Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
-               shell = True )
+    sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
-        if os.path.isfile(ROBOT_RUNNING):
-            "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
-            os.remove(ROBOT_RUNNING)
+    Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+           shell = True )
 
-        Popen( "sr-ts %s" % ROBOT_RUNNING,
-               shell = True )
+    if os.path.isfile(ROBOT_RUNNING):
+        "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
+        os.remove(ROBOT_RUNNING)
 
-        disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
+    Popen( "sr-ts %s" % ROBOT_RUNNING,  shell = True )
+
+    disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
 
     Popen( "srinput" )
 
     if not args.immed_start:
         call("pyenv_start")
 
-    if not args.debug:
-        #Tell things that code is being run
-        open(ROBOT_RUNNING,"w").close()
+    #Tell things that code is being run
+    open(ROBOT_RUNNING,"w").close()
 
-        #Feed display a newline now that code is to be run
-        disp.stdin.write("\n")
+    #Feed display a newline now that code is to be run
+    disp.stdin.write("\n")
 
     # List the enumerated boards in the log
     print "Found the following devices:"
