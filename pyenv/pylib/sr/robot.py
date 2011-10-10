@@ -1,3 +1,4 @@
+# Copyright Robert Spanton 2011
 import json, sys, optparse, time, os
 import pysric, threading
 
@@ -7,10 +8,26 @@ class SricCtxMan(object):
         self.store = threading.local()
 
     def get(self):
+        "Return a pysric context for use in this thread"
         if "ctx" not in self.store.__dict__:
             self.store.ctx = pysric.PySric()
 
         return self.store.ctx
+
+    def get_addr(self, addr):
+        "Return the SricDevice instance for the given address for this thread"
+
+        if "addr" not in self.store.__dict__:
+            "Construct a dictionary of the available addresses"
+            self.store.addr = {}
+            ps = self.get()
+
+            for devs in ps.devices.values():
+                for dev in devs:
+                    assert dev.address not in dev
+                    self.store.addr[dev.address] = dev
+
+        return self.store.addr[addr]
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
