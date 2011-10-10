@@ -42,6 +42,10 @@ if not args.debug:
 
     "Put stdout and stderr into log file"
     sys.stderr = sys.stdout = addcr.AddCRWriter(open( LOG_FNAME, "at", 1))
+else:
+    "Ensure that the logfile exists, as some things need it"
+    if not os.path.exists( LOG_FNAME ):
+        open( LOG_FNAME, "w" ).close()
 
 print "Initialising..."
 try:
