@@ -1,0 +1,24 @@
+#!/bin/sh
+# Encapsulate a program and all its offspring in a cgroup
+# When the program exits, kill all its offspring
+
+n=0
+cgroup=/dev/cgroup/encap-$n
+while [ -e $cgroup ]
+do
+    n=$((n+1))
+    cgroup=/dev/cgroup/encap-$n
+done
+
+mkdir $cgroup
+
+./encap-helper $cgroup "$@"
+
+# Kill everything
+cat $cgroup/tasks | while read pid
+do
+    kill -KILL $pid
+done
+
+rm -rf $cgroup > /dev/null 2> /dev/null
+

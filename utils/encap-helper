@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cgroup=$1
+shift
+
+echo $$ > $cgroup/tasks
+
+exec "$@"
