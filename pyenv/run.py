@@ -57,8 +57,9 @@ try:
     os.environ["PATH"] += ":" + BIN_DIR
 
     # Hack around zip not supporting file permissions...
-    call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
-          shell = True )
+    if not os.access( "run.py", os.X_OK ):
+        call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+              shell = True )
 
     if not os.path.exists( USER_EXEC ):
         "No robot code around"
