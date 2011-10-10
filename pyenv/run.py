@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import optparse, sys, logging, os, os.path, traceback
+import optparse, sys, os, os.path, traceback
 import sricd, pysric
 import addcr
 import subprocess
@@ -41,10 +41,6 @@ if not args.debug:
 
     "Put stdout and stderr into log file"
     sys.stderr = sys.stdout = addcr.AddCRWriter(open( LOG_FNAME, "at", 1))
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(message)s',
-                    stream = sys.stdout)
 
 print "Initialising..."
 try:
