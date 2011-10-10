@@ -36,10 +36,7 @@ class Robot(object):
     def _wait_start(self):
         "Wait for the start signal to happen"
 
-        # The fifo might not exist yet, so wait for it to exist
-        while not os.path.exists( self.startfifo ):
-            time.sleep(0.2)
-
+        os.mkfifo( self.startfifo )
         f = open( self.startfifo, "r" )
         d = f.read()
         f.close()

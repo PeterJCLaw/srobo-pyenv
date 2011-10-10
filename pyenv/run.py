@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import optparse, sys, os, os.path, traceback
+import optparse, sys, os, os.path, traceback, time
 import sricd, json
 import addcr
 import subprocess
@@ -67,6 +67,9 @@ try:
 
     sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
+    if os.path.exists( START_FIFO ):
+        os.unlink( START_FIFO )
+
     robot = Popen( ["python", "-m", "sr.loggrok",
                     USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
                    cwd = USER_DIR,
@@ -98,8 +101,10 @@ try:
     disp.stdin.write("\n")
 
     # Ready for user code to execute, send it useful info:
-    if not os.path.exists( START_FIFO ):
-        os.mkfifo( START_FIFO )
+    while not os.path.exists( START_FIFO ):
+        print "Waiting"
+        time.sleep(0.2)
+
     f = open( START_FIFO, "w" )
     # Hard-coded data for the moment
     f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
