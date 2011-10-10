@@ -5,12 +5,13 @@ import pysric, tssric
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
 
-    def __init__(self):
+    def __init__(self, wait_start = True):
         self.sricman = tssric.SricCtxMan()
 
         self._dump_bus()
         self._parse_cmdline()
-        self._wait_start()
+        if wait_start:
+            self._wait_start()
 
     def _dump_bus(self):
         "Write the contents of the SRIC bus out to stdout"
