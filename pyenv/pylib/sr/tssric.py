@@ -10,8 +10,8 @@ class TSSricDevice(object):
         self._tl = threading.local()
 
     def _pop_myself(self):
-        if "dev" not in self._tl:
-            self._tl.dev = self.sricman.get_addr_nts( self._address )
+        if "dev" not in self._tl.__dict__:
+            self._tl.dev = self._sricman.get_addr_nts( self._address )
 
     def __getattr__(self, name):
         "Provide access to the underlying Sric device"
