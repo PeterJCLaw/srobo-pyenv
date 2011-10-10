@@ -23,6 +23,7 @@ ROBOT_RUNNING = "/tmp/robot-running"
 PROG_DIR = os.path.dirname( __file__ )
 BIN_DIR = os.path.join( PROG_DIR, "bin" )
 LIB_DIR = os.path.join( PROG_DIR, "lib" )
+PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 START_FIFO = "/tmp/robot-start"
@@ -47,6 +48,7 @@ try:
     # Environment variables that we want:
     envs = { "PYSRIC_LIBDIR": LIB_DIR,
              "LD_LIBRARY_PATH": LIB_DIR,
+             "PYTHONPATH": PYLIB_DIR,
              "DISPLAY": ":0.0" }
     for k,v in envs.iteritems():
         os.environ[k] = v
