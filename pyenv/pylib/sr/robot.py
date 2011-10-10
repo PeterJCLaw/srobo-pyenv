@@ -1,10 +1,23 @@
 import json, sys, optparse, time, os
-import pysric
+import pysric, threading
+
+class SricCtxMan(object):
+    """Class for storing/managing one sric context per thread"""
+    def __init__(self):
+        self.store = threading.local()
+
+    def get(self):
+        if "ctx" not in self.store.__dict__:
+            self.store.ctx = pysric.PySric()
+
+        return self.store.ctx
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
 
     def __init__(self):
+        self.sricman = SricCtxMan()
+
         self._dump_bus()
         self._parse_cmdline()
         self._wait_start()
@@ -12,7 +25,7 @@ class Robot(object):
     def _dump_bus(self):
         "Write the contents of the SRIC bus out to stdout"
         print "Found the following devices:"
-        ps = pysric.PySric()
+        ps = self.sricman.get()
         for devclass in ps.devices:
             if devclass in [ pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR,
                              pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO ]:
