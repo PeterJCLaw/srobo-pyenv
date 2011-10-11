@@ -1,7 +1,3 @@
-from jointio import IOPoll
-from events import Event
-import pysric
-
 CMD_ENABLE_INPUT_NOTES = 5
 CMD_PLAY_PIEZO = 6
 CMD_SET_LEDS = 7
@@ -80,10 +76,4 @@ class Power:
             tx.append( 5 )
 
         self.dev.txrx( tx )
-
-ps = pysric.PySric()
-power = None
-
-if pysric.SRIC_CLASS_POWER in ps.devices:
-    power = Power( ps.devices[pysric.SRIC_CLASS_POWER][0] )
 
