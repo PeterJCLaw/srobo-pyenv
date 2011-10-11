@@ -1,7 +1,7 @@
 # Copyright Robert Spanton 2011
 import json, sys, optparse, time, os
 import pysric, tssric
-import motor, power
+import motor, power, servo
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
@@ -75,3 +75,8 @@ class Robot(object):
             raise Exception( "Power board not enumerated -- aborting." )
         self.power = power.Power( self.sricman.devices[pysric.SRIC_CLASS_POWER][0] )
 
+        # Servos:
+        self.servos = []
+        if pysric.SRIC_CLASS_SERVO in self.sricman.devices:
+            for dev in self.sricman.devices[ pysric.SRIC_CLASS_MOTOR ]:
+                self.servos.append( servo.Servo(dev) )

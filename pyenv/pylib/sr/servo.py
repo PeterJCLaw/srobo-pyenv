@@ -1,5 +1,4 @@
-# Interface to servos
-import pysric, types, __builtin__
+"Interface to servo boards"
 
 # Motor controller SRIC commands
 CMD_SERVO_SET = 0
@@ -56,12 +55,3 @@ class Servo(object):
         """Enable/disable the SMPS on the servo board"""
         tx = [CMD_SERVO_SMPS, bool(en)]
         self.dev.txrx(tx)
-
-ps = pysric.PySric()
-servo = []
-
-if pysric.SRIC_CLASS_SERVO in ps.devices:
-
-    for dev in ps.devices[ pysric.SRIC_CLASS_SERVO ]:
-        servo_dev = Servo(dev)
-        servo.append( servo_dev )
