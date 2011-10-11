@@ -64,25 +64,20 @@ class Robot(object):
     def _init_devs(self):
         "Initialise the attributes for accessing devices"
 
-        # Motors:
-        self.motors = []
-        if pysric.SRIC_CLASS_MOTOR in self.sricman.devices:
-            for dev in self.sricman.devices[ pysric.SRIC_CLASS_MOTOR ]:
-                self.motors.append( motor.Motor( dev ) )
+        mapping = { pysric.SRIC_CLASS_MOTOR: ( "motors", motor.Motor ),
+                    pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ),
+                    pysric.SRIC_CLASS_JOINTIO: ( "io", jointio.JointIO ) }
+
+        for devtype, info in mapping.iteritems():
+            attrname, cls = info
+            if devtype in self.sricman.devices:
+                l = []
+                setattr( self, attrname, l )
+
+                for dev in self.sricman.devices[ devtype ]:
+                    l.append( cls( dev ) )
 
         # Power board
         if pysric.SRIC_CLASS_POWER not in self.sricman.devices:
             raise Exception( "Power board not enumerated -- aborting." )
         self.power = power.Power( self.sricman.devices[pysric.SRIC_CLASS_POWER][0] )
-
-        # Servos:
-        self.servos = []
-        if pysric.SRIC_CLASS_SERVO in self.sricman.devices:
-            for dev in self.sricman.devices[ pysric.SRIC_CLASS_MOTOR ]:
-                self.servos.append( servo.Servo(dev) )
-
-        # JointIOs
-        self.io = []
-        if pysric.SRIC_CLASS_JOINTIO in self.sricman.devices:
-            for dev in self.sricman.devices[ pysric.SRIC_CLASS_JOINTIO ]:
-                self.io.append( jointio.Jointio(dev) )
