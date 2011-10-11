@@ -1,7 +1,7 @@
 # Copyright Robert Spanton 2011
 import json, sys, optparse, time, os
 import pysric, tssric
-import motor, power, servo
+import motor, power, servo, jointio
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
@@ -80,3 +80,9 @@ class Robot(object):
         if pysric.SRIC_CLASS_SERVO in self.sricman.devices:
             for dev in self.sricman.devices[ pysric.SRIC_CLASS_MOTOR ]:
                 self.servos.append( servo.Servo(dev) )
+
+        # JointIOs
+        self.io = []
+        if pysric.SRIC_CLASS_JOINTIO in self.sricman.devices:
+            for dev in self.sricman.devices[ pysric.SRIC_CLASS_JOINTIO ]:
+                self.io.append( jointio.Jointio(dev) )

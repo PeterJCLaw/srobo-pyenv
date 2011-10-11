@@ -349,12 +349,3 @@ class QueryJointIO(object):
         self.jio = jio
         self.input = QueryInputPins(jio)
 
-ps = pysric.PySric()
-io = []
-queryio = []
-
-if pysric.SRIC_CLASS_JOINTIO in ps.devices:
-    for dev in ps.devices[ pysric.SRIC_CLASS_JOINTIO ]:
-        jio = JointIO(dev)
-        io.append( jio )
-        queryio.append( QueryJointIO(jio) )
