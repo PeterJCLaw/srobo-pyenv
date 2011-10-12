@@ -12,9 +12,6 @@ class Poll:
         # Returns a list of event objects
         raise Exception( "Base class Poll must never be evaluated" )
 
-    def next(self):
-        return self.eval()
-
     def __add__(self, op):
         print "and"
         return And(self,op)
