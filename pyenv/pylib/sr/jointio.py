@@ -1,6 +1,5 @@
 import pysric
 from events import Event
-import logging
 import poll
 
 CMD_OUTPUT_SET = 0
