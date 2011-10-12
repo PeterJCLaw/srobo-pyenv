@@ -1,4 +1,3 @@
-import pysric
 from events import Event
 import poll
 
