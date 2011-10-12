@@ -322,17 +322,12 @@ class QueryInputPin(object):
     def d(self):
         return QueryInputPinDigital(self.num, self.jio)
 
-class QueryInputPins(object):
-    def __init__(self, jio):
-        self.jio = jio
-
-    def __getitem__(self, n):
-        if n < 0 or n > 8:
-            raise InvalidPin("Pin out of range")
-        return QueryInputPin(n, self.jio)
-
 class QueryJointIO(object):
     def __init__(self, jio):
         self.jio = jio
-        self.input = QueryInputPins(jio)
+
+        inputs = []
+        for x in range(0,8):
+            inputs.append( QueryInputPin(x,self) )
+        self.input = tuple(inputs)
 
