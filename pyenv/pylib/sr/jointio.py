@@ -1,4 +1,3 @@
-from events import Event
 import poll
 
 CMD_OUTPUT_SET = 0
@@ -6,26 +5,6 @@ CMD_OUTPUT_GET = 1
 CMD_INPUT_A = 2
 CMD_INPUT_D = 3
 CMD_SMPS = 4
-
-class IOEventInfo:
-    def __init__(self):
-        self.pins = []
-        self.vals = {}
-
-class IOEvent(Event):
-    def __init__(self, pvals):
-        "pvals is a dict of relevant pins and values"
-        Event.__init__(self, io)
-        self.pvals = pvals
-
-    def add_info(self, ev):
-        if not hasattr(ev, "io"):
-            ev.io = IOEventInfo()
-
-        for pin, val in self.pvals.iteritems():
-            if pin not in ev.io.pins:
-                ev.io.pins.append(pin)
-            ev.io.vals[pin] = val
 
 class CannotEquate(Exception):
     def __init__(self, value):
@@ -57,17 +36,7 @@ class IOOperator(poll.Poll):
 
     def __nonzero__(self):
         "For when the operation gets cast into a bool"
-        return self.eval() != None
-
-    def gen_event(self, vals):
-        pvals = {}
-        for i in xrange(0, len(vals)):
-            p = self.operands[i]
-
-            # TODO :(
-            # if isinstance(p, Pin) or isinstance(p, AnaloguePin):
-            #     pvals[ p.num ] = vals[i]
-        return pvals
+        return self.eval()[0]
 
 class IOEqual(IOOperator):
     def eval(self):
@@ -76,9 +45,10 @@ class IOEqual(IOOperator):
         for op in self.operands[1:]:
             v = op.val()
             if n != v:
-                return
+                return False, None
             vals.append(v)
-        return IOEvent(self.gen_event(vals))
+
+        return True, tuple(vals)
 
     def __str__(self):
         return "IOEqual(%s)" % (" == ".join([str(x) for x in self.operands]))
@@ -88,8 +58,8 @@ class IONotEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n == m:
-            return
-        return IOEvent(self.gen_event([n,m]))
+            return False, None
+        return True, (n,m)
 
     def __str__(self):
         return "IONotEqual(%s)" % (" != ".join([str(x) for x in self.operands]))
@@ -99,8 +69,8 @@ class IOLessThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n < m:
-            return IOEvent(self.gen_event([n,m]))
-        return
+            return True, (n,m)
+        return False, None
 
     def __str__(self):
         return "IOLessThan(%s < %s)" % (self.operands[0], self.operands[1])
@@ -110,8 +80,8 @@ class IOGreaterThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n > m:
-            return IOEvent(self.gen_event([n,m]))
-        return
+            return True, (n,m)
+        return False, None
 
     def __str__(self):
         return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
@@ -121,8 +91,8 @@ class IOLessThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n <= m:
-            return IOEvent(self.gen_event([n,m]))
-        return
+            return True, (n,m)
+        return False, None
 
     def __str__(self):
         return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
@@ -132,8 +102,8 @@ class IOGreaterThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n >= m:
-            return IOEvent(self.gen_event([n,m]))
-        return
+            return True, (n,m)
+        return False, None
 
     def __str__(self):
         return "IOGreaterThan(%s > %s)" % (self.operands[0], self.operands[1])
@@ -163,10 +133,64 @@ class IOPoll(poll.Poll):
     def __ge__(self,o):
         return IOGreaterThanOrEqual( self, o )
 
+class QueryInputPinDigital(IOPoll):
+    def __init__(self, ipin):
+        "num is the pin number we're dealing with"
+        self.ipin = ipin
+
+        # Initial value
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        v = self.val()
+        if v != self.ival:
+            self.ival = v
+            return True, v
+        return False, None
+
+    def val(self):
+        return self.ipin.d
+
+class QueryInputPinAnalogue(IOPoll):
+    def __init__(self, ipin):
+        "num is the pin number we're dealing with"
+        self.ipin = ipin
+
+        self.ival = self.val()
+        IOPoll.__init__(self)
+
+    def eval(self):
+        v = self.val()
+        if v != self.ival:
+            return True, v
+        return False, v
+
+    def __eq__(self,o):
+        raise CannotEquate("Analogue pins don't support the '==' operator.")
+
+    def val(self):
+        return self.ipin.a
+
+class QueryInputPin(object):
+    def __init__(self, ipin):
+        self.ipin = ipin
+
+    @property
+    def a(self):
+        "Analogue pin query"
+        return QueryInputPinAnalogue(self.ipin)
+
+    @property
+    def d(self):
+        "Digital pin query"
+        return QueryInputPinDigital(self.ipin)
+
 class InputPin(object):
     def __init__(self, num, jio):
         self.num = num
         self.jio = jio
+        self.query = QueryInputPin(self)
 
     @property
     def a(self):
@@ -261,67 +285,4 @@ class JointIO(object):
         else:
             v = 0
         self.dev.txrx( [ CMD_SMPS, v ] )
-
-class QueryInputPinDigital(IOPoll):
-    def __init__(self, num, jio):
-        "num is the pin number we're dealing with"
-        self.num = num
-        self.jio = jio
-
-        # Initial value
-        self.ival = self.val()
-        IOPoll.__init__(self)
-
-    def eval(self):
-        v = self.val()
-        if v != self.ival:
-            self.ival = v
-            return IOEvent({self.num: v})
-        return None
-
-    def val(self):
-        return self.jio.input[self.num].d
-
-class QueryInputPinAnalogue(IOPoll):
-    def __init__(self, num, jio):
-        "num is the pin number we're dealing with"
-        self.num = num
-        self.jio = jio
-
-        self.ival = self.val()
-        IOPoll.__init__(self)
-
-    def eval(self):
-        v = self.val()
-        if v != self.ival:
-            return IOEvent({self.num: v})
-        return None
-
-    def __eq__(self,o):
-        raise CannotEquate("Analogue pins don't support the '==' operator.")
-
-    def val(self):
-        return self.jio.input[self.num].a
-
-class QueryInputPin(object):
-    def __init__(self, num, jio):
-        self.num = num
-        self.jio = jio
-
-    @property
-    def a(self):
-        return QueryInputPinAnalogue(self.num, self.jio)
-
-    @property
-    def d(self):
-        return QueryInputPinDigital(self.num, self.jio)
-
-class QueryJointIO(object):
-    def __init__(self, jio):
-        self.jio = jio
-
-        inputs = []
-        for x in range(0,8):
-            inputs.append( QueryInputPin(x,self) )
-        self.input = tuple(inputs)
 
