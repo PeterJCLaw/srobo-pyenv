@@ -3,9 +3,14 @@ class Poll:
         pass
 
     def eval(self):
+        """
+        (virtual)
+        Evaluate this poll.
+        Return a tuple: (happened, val)
+         - happened: bool: whether the event happened
+         - val: The value of the poll that should be passed to the user."""
         # Returns a list of event objects
-        print "WARNING: Evaluating instance of base poll :-("
-        return None
+        raise Exception( "Base class Poll must never be evaluated" )
 
     def next(self):
         return self.eval()
