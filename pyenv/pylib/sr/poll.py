@@ -26,7 +26,7 @@ class Poll:
         return Or(self,op)
 
     def __str__(self):
-        return "Nothing Poll" 
+        return "Poll base class" 
 
 def convert_polls(polls):
     res = []
