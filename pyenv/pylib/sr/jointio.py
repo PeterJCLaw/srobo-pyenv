@@ -207,29 +207,18 @@ class OutputPin(object):
             v &= ~(1<<self.num)
         self.jio._output_set(v)
 
-class OutputPins:
-    def __init__(self, jio):
-        self.jio = jio
-    
-    def __getitem__(self, n):
-        if n < 0 or n > 8:
-            raise InvalidPin("Pin out of range")
-        return OutputPin(n, self.jio)
-
-class InputPins(object):
-    def __init__(self, jio):
-        self.jio = jio
-
-    def __getitem__(self, n):
-        if n < 0 or n > 8:
-            raise InvalidPin("Pin out of range")
-        return InputPin(n, self.jio)
-
 class JointIO(object):
     def __init__(self, dev):
         self.dev = dev
-        self.input = InputPins(self)
-        self.output = OutputPins(self)
+
+        inputs = []
+        outputs = []
+        for x in range(0, 8):
+            inputs.append( InputPin(x, self) )
+            outputs.append( OutputPin(x, self) )
+
+        self.input = tuple( inputs )
+        self.output = tuple( outputs )
 
         self._smps_control(True)
 
