@@ -27,12 +27,6 @@ class IOEvent(Event):
                 ev.io.pins.append(pin)
             ev.io.vals[pin] = val
 
-class InvalidPin(Exception):
-    def __init__(self, value):
-        self.parameter = value
-    def __str__(self):
-        return repr(self.parameter)
-
 class CannotEquate(Exception):
     def __init__(self, value):
         self.parameter = value
