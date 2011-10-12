@@ -41,11 +41,19 @@ class Or(Poll):
 
     def eval(self):
         # evaluate until one works...
+        res = []
+
         for o in self.operands:
-            r = o.eval()
-            if r != None:
-                return r
-        return None
+            happened, r = o.eval()
+            res.append(r)
+
+            if happened:
+                "Result found -- return stuff"
+                # Pad the results out to the right length
+                res += [None] * (len(self.operands) - len(res))
+                return True, res
+
+        return False, None
 
     def __str__(self):
         return "OR(%s)" % ", ".join([str(x) for x in self.operands])
@@ -56,14 +64,17 @@ class And(Poll):
         self.operands = convert_polls(args)
 
     def eval(self):
-        # evaluate both things...
         res = []
+
         for o in self.operands:
-            r = o.eval()
-            if r == None:
-                return None
+            happened, r = o.eval()
             res.append(r)
-        return res
+
+            if not happened:
+                "Nope, nothing happened"
+                return False, None
+
+        return True, res
 
     def __str__(self):
         return "AND(%s)" % ", ".join([str(x) for x in self.operands])
