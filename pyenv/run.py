@@ -110,10 +110,9 @@ while not os.path.exists( START_FIFO ):
     time.sleep(0.2)
 
 print "Starting user code."
-f = open( START_FIFO, "w" )
-# Hard-coded data for the moment
-f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
-f.close()
+with open( START_FIFO, "w" ) as f:
+    # Hard-coded data for the moment
+    f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
 
 r = robot.wait()
 print "Robot code exited with code %i" % r
