@@ -74,6 +74,7 @@ try:
     if os.path.exists( START_FIFO ):
         os.unlink( START_FIFO )
 
+    print "Running user code."
     robot = Popen( ["python", "-m", "sr.loggrok",
                     USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
                    cwd = USER_DIR,
@@ -108,6 +109,7 @@ try:
     while not os.path.exists( START_FIFO ):
         time.sleep(0.2)
 
+    print "Starting user code."
     f = open( START_FIFO, "w" )
     # Hard-coded data for the moment
     f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
