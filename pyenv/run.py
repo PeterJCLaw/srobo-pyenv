@@ -106,7 +106,6 @@ try:
 
     # Ready for user code to execute, send it useful info:
     while not os.path.exists( START_FIFO ):
-        print "Waiting"
         time.sleep(0.2)
 
     f = open( START_FIFO, "w" )
