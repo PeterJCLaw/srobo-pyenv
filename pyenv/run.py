@@ -48,76 +48,72 @@ else:
         open( LOG_FNAME, "w" ).close()
 
 print "Initialising..."
-try:
-    # Environment variables that we want:
-    envs = { "PYSRIC_LIBDIR": LIB_DIR,
-             "LD_LIBRARY_PATH": LIB_DIR,
-             "PYTHONPATH": PYLIB_DIR,
-             "DISPLAY": ":0.0" }
-    for k,v in envs.iteritems():
-        os.environ[k] = v
 
-    # Extend PATH to include our bin directory
-    os.environ["PATH"] += ":" + BIN_DIR
+# Environment variables that we want:
+envs = { "PYSRIC_LIBDIR": LIB_DIR,
+         "LD_LIBRARY_PATH": LIB_DIR,
+         "PYTHONPATH": PYLIB_DIR,
+         "DISPLAY": ":0.0" }
+for k,v in envs.iteritems():
+    os.environ[k] = v
 
-    # Hack around zip not supporting file permissions...
-    if not os.access( "run.py", os.X_OK ):
-        call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
-              shell = True )
+# Extend PATH to include our bin directory
+os.environ["PATH"] += ":" + BIN_DIR
 
-    if not os.path.exists( USER_EXEC ):
-        "No robot code around"
-        raise Exception( "No robot code found." )
+# Hack around zip not supporting file permissions...
+if not os.access( "run.py", os.X_OK ):
+    call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+          shell = True )
 
-    sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
+if not os.path.exists( USER_EXEC ):
+    "No robot code around"
+    raise Exception( "No robot code found." )
 
-    if os.path.exists( START_FIFO ):
-        os.unlink( START_FIFO )
+sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
-    print "Running user code."
-    robot = Popen( ["python", "-m", "sr.loggrok",
-                    USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
-                   cwd = USER_DIR,
-                   stdout = sys.stdout,
-                   stderr = sys.stderr )
+if os.path.exists( START_FIFO ):
+    os.unlink( START_FIFO )
 
-    Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
-           shell = True )
+print "Running user code."
+robot = Popen( ["python", "-m", "sr.loggrok",
+                USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
+               cwd = USER_DIR,
+               stdout = sys.stdout,
+               stderr = sys.stderr )
 
-    if os.path.isfile(ROBOT_RUNNING):
-        "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
-        os.remove(ROBOT_RUNNING)
+Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+       shell = True )
 
-    # Start the task-switcher
-    Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
-    # Start the GUI
-    disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
-    # Funnel button presses through to X
-    Popen( "srinput" )
+if os.path.isfile(ROBOT_RUNNING):
+    "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
+    os.remove(ROBOT_RUNNING)
 
-    if not args.immed_start:
-        "Wait for the button press to happen"
-        call("pyenv_start")
+# Start the task-switcher
+Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
+# Start the GUI
+disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
+# Funnel button presses through to X
+Popen( "srinput" )
 
-    #Tell things that code is being run
-    open(ROBOT_RUNNING,"w").close()
+if not args.immed_start:
+    "Wait for the button press to happen"
+    call("pyenv_start")
 
-    #Feed display a newline now that code is to be run
-    disp.stdin.write("\n")
+#Tell things that code is being run
+open(ROBOT_RUNNING,"w").close()
 
-    # Ready for user code to execute, send it useful info:
-    while not os.path.exists( START_FIFO ):
-        time.sleep(0.2)
+#Feed display a newline now that code is to be run
+disp.stdin.write("\n")
 
-    print "Starting user code."
-    f = open( START_FIFO, "w" )
-    # Hard-coded data for the moment
-    f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
-    f.close()
+# Ready for user code to execute, send it useful info:
+while not os.path.exists( START_FIFO ):
+    time.sleep(0.2)
 
-    r = robot.wait()
-    print "Robot code exited with code %i" % r
+print "Starting user code."
+f = open( START_FIFO, "w" )
+# Hard-coded data for the moment
+f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
+f.close()
 
-except:
-    print "Error: "
-    traceback.print_exc(file=sys.stderr)
+r = robot.wait()
+print "Robot code exited with code %i" % r
