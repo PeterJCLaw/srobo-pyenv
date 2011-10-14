@@ -22,6 +22,11 @@ def remove_gunk( tmpd ):
 
     assert subprocess.call( "find %s | xargs -0 rm -f" % r, cwd = tmpd, shell = True ) == 0
 
+    # Remove any trace of a user directory
+    udir = os.path.join( tmpd, "user" )
+    if os.path.exists( udir ):
+        shutil.rmtree( udir )
+
 def get_elf_mach( elfname ):
     "Return the machine that the given ELF is for"
     r = re.compile( "Machine:\s*(.+)$" )
