@@ -45,5 +45,5 @@ if __name__ == "__main__":
 
     # The BeagleBoard runs Python 2.6, which doesn't include runpy.run_path
     # So we have to hack our own implementation of this up!
-    eval( compile( open( prog, "r" ).read(),
+    eval( compile( open( prog, "r" ).read() + "\n",
                    prog, "exec" ) )
