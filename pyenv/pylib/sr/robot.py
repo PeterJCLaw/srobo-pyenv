@@ -1,16 +1,22 @@
 # Copyright Robert Spanton 2011
-import json, sys, optparse, time, os
+import json, sys, optparse, time, os, glob
 import pysric, tssric
-import motor, power, servo, jointio
+import motor, power, servo, jointio, vision
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
 
-    def __init__(self, wait_start = True):
+    def __init__( self,
+                  wait_start = True,
+                  init_vision = True,
+                  camera_dev = "/dev/video0" ):
         self.sricman = tssric.SricCtxMan()
 
         self._dump_bus()
         self._init_devs()
+
+        if init_vision:
+            self._init_vision(camera_dev)
 
         self._parse_cmdline()
         if wait_start:
@@ -81,3 +87,29 @@ class Robot(object):
         if pysric.SRIC_CLASS_POWER not in self.sricman.devices:
             raise Exception( "Power board not enumerated -- aborting." )
         self.power = power.Power( self.sricman.devices[pysric.SRIC_CLASS_POWER][0] )
+
+    def _init_vision(self, camdev):
+        if not os.path.exists(camdev):
+            "Camera isn't connected."
+            return
+
+        # Find libsric.so:
+        libpath = None
+        if "LD_LIBRARY_PATH" in os.environ:
+            for d in os.environ["LD_LIBRARY_PATH"].split(":"):
+                l = glob.glob( "%s/libkoki.so*" % os.path.abspath( d ) )
+
+                if len(l):
+                    libpath = os.path.abspath(d)
+                    break
+
+        if libpath == None:
+            v = vision.Vision(camdev)
+        else:
+            v = vision.Vision(camdev, libpath)
+
+        self.vision = v
+
+    def see(self, res = (800,600)):
+        return self.vision.see( res = res,
+                                mode = self.mode )
