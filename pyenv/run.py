@@ -65,7 +65,7 @@ if "PATH" not in os.environ:
 os.environ["PATH"] += ":" + BIN_DIR
 
 # Hack around zip not supporting file permissions...
-if not os.access( "run.py", os.X_OK ):
+if not os.access( os.path.join( BIN_DIR, "sricd" ), os.X_OK ):
     call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
           shell = True )
 
