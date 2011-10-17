@@ -57,6 +57,10 @@ envs = { "PYSRIC_LIBDIR": LIB_DIR,
 for k,v in envs.iteritems():
     os.environ[k] = v
 
+if "PATH" not in os.environ:
+    "The PATH environment variable doesn't make it through when run from udev"
+    os.environ["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+
 # Extend PATH to include our bin directory
 os.environ["PATH"] += ":" + BIN_DIR
 
