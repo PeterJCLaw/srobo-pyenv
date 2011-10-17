@@ -58,8 +58,6 @@ marker_luts = { "dev": create_marker_lut(0),
 MarkerBase = namedtuple( "Marker", "info timestamp res vertices centre orientation" ) 
 class Marker(MarkerBase):
     def __init__( self, *a, **kwd ):
-        MarkerBase.__init__(self, *a, **kwd)
-
         # Aliases
         self.dist = self.centre.polar.length
         self.rot_y = self.centre.polar.rot_y
