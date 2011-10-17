@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import optparse, sys, os, os.path, traceback, time
+import optparse, sys, os, os.path, time
 import sricd, json
 import addcr
 import subprocess
