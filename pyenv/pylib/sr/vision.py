@@ -91,7 +91,6 @@ class Vision(object):
         if res == self._res:
             "Resolution already the requested one"
             return
-        print "Res change"
 
         was_streaming = self._streaming
         if was_streaming:
@@ -109,7 +108,6 @@ class Vision(object):
         height = fmt.fmt.pix.height
 
         if width != res[0] or height != res[1]:
-            print width, height, res
             raise ValueError( "Unsupported image resolution" )
         self._res = (width, height)
 
@@ -140,7 +138,6 @@ class Vision(object):
         # Now that we're dealing with a copy of the image, release the camera lock
         self.lock.release()
 
-        print "acq time", time.time() - acq_time
         t1 = time.time()
         params = CameraParams( Point2Df( self._res[0]/2,
                                          self._res[1]/2 ),
@@ -148,8 +145,6 @@ class Vision(object):
                                Point2Di( *self._res ) )
 
         markers = self.koki.find_markers_fp( img, self._width_from_code, params )
-
-        print "proc time:", time.time() - t1
 
         srmarkers = []
         for m in markers:
