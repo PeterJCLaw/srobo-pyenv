@@ -1,4 +1,4 @@
-import pykoki, threading, time
+import pykoki, threading, time, functools
 from collections import namedtuple
 from pykoki import CameraParams, Point2Df, Point2Di
 
@@ -123,8 +123,12 @@ class Vision(object):
         self.koki.v4l_start_stream(self.fd)
         self._streaming = True
 
-    def _width_from_code(self, code):
-        return 0.1 * (10.0/12.0)
+    def _width_from_code(self, lut, code):
+        if code not in lut:
+            # We really want to ignore these...
+            return 0.1
+
+        return lut[code].size
 
     def see(self, mode, res):
         self.lock.acquire()
@@ -142,7 +146,9 @@ class Vision(object):
                                Point2Df( *camera_focal_length[ self._res ] ),
                                Point2Di( *self._res ) )
 
-        markers = self.koki.find_markers_fp( img, self._width_from_code, params )
+        markers = self.koki.find_markers_fp( img,
+                                             functools.partial( self._width_from_code, marker_luts[mode] ),
+                                             params )
 
         srmarkers = []
         for m in markers:
