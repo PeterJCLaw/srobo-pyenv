@@ -146,6 +146,10 @@ class Vision(object):
 
         srmarkers = []
         for m in markers:
+            if m.code not in marker_luts[mode]:
+                "Ignore other sets of codes"
+                continue
+
             info = marker_luts[mode][int(m.code)]
 
             vertices = []
