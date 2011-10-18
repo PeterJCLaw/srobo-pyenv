@@ -4,6 +4,11 @@
 
 #include <sric.h>
 
+/* Push buttons */
+#define INPUT_B0    (1<<0)
+#define INPUT_B1    (1<<1)
+#define INPUT_B2    (1<<2)
+
 int
 main(int argc, char **argv)
 {
@@ -51,6 +56,7 @@ main(int argc, char **argv)
 	/* And wait for them */
 	do {
 		uint16_t flags;
+		uint16_t edges;
 
 		if (sric_poll_note(ctx, &frame, -1) != 0) {
 			fprintf(stderr, "Error fetching note frame: %d\n",
@@ -63,11 +69,12 @@ main(int argc, char **argv)
 
 		flags = frame.payload[1];
 		flags |= frame.payload[2] << 8;
+		edges = frame.payload[3];
+		edges |= frame.payload[3] << 8;
 
-		if (flags & 1) {
-			/* If it's either a keypress or release */
+		/* A '1' edge means the button has just been pressed */
+		if ( (flags & INPUT_B0) && (edges & 1) )
 			exit(0);
-		}
 	} while (1);
 
 	return 0;
