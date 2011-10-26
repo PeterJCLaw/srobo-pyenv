@@ -43,7 +43,4 @@ if __name__ == "__main__":
     # Remove ourselves from the args
     sys.argv = sys.argv[1:]
 
-    # The BeagleBoard runs Python 2.6, which doesn't include runpy.run_path
-    # So we have to hack our own implementation of this up!
-    eval( compile( open( prog, "r" ).read() + "\n",
-                   prog, "exec" ) )
+    execfile(prog)
