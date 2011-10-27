@@ -38,6 +38,21 @@ class IOOperator(poll.Poll):
         "For when the operation gets cast into a bool"
         return self.eval()[0]
 
+    def _strip_valwrappers(self, l):
+        "Remove the ValWrapper instances from the passed list, return tuple if appropriate"
+        assert len(l) == len(self.operands)
+        r = []
+
+        for n in range(len(l)):
+            op = self.operands[n]
+            val = l[n]
+            if not isinstance(op, ValWrapper):
+                r.append(val)
+
+        if len(r) == 1:
+            return r[0]
+        return tuple(r)
+
 class IOEqual(IOOperator):
     def eval(self):
         n = self.operands[0].val()
@@ -48,7 +63,7 @@ class IOEqual(IOOperator):
                 return False, None
             vals.append(v)
 
-        return True, tuple(vals)
+        return True, self._strip_valwrappers(vals)
 
     def __str__(self):
         return "IOEqual(%s)" % (" == ".join([str(x) for x in self.operands]))
@@ -59,7 +74,7 @@ class IONotEqual(IOOperator):
         m = self.operands[1].val()
         if n == m:
             return False, None
-        return True, (n,m)
+        return True, self._strip_valwrappers((n,m))
 
     def __str__(self):
         return "IONotEqual(%s)" % (" != ".join([str(x) for x in self.operands]))
@@ -69,7 +84,7 @@ class IOLessThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n < m:
-            return True, (n,m)
+            return True, self._strip_valwrappers((n,m))
         return False, None
 
     def __str__(self):
@@ -80,7 +95,7 @@ class IOGreaterThan(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n > m:
-            return True, (n,m)
+            return True, self._strip_valwrappers((n,m))
         return False, None
 
     def __str__(self):
@@ -91,7 +106,7 @@ class IOLessThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n <= m:
-            return True, (n,m)
+            return True, self._strip_valwrappers((n,m))
         return False, None
 
     def __str__(self):
@@ -102,7 +117,7 @@ class IOGreaterThanOrEqual(IOOperator):
         n = self.operands[0].val()
         m = self.operands[1].val()
         if n >= m:
-            return True, (n,m)
+            return True, self._strip_valwrappers((n,m))
         return False, None
 
     def __str__(self):
