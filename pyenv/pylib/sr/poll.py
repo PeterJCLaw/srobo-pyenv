@@ -51,7 +51,7 @@ class Or(Poll):
                 "Result found -- return stuff"
                 # Pad the results out to the right length
                 res += [None] * (len(self.operands) - len(res))
-                return True, res
+                return True, tuple(res)
 
         return False, None
 
@@ -74,7 +74,7 @@ class And(Poll):
                 "Nope, nothing happened"
                 return False, None
 
-        return True, res
+        return True, tuple(res)
 
     def __str__(self):
         return "AND(%s)" % ", ".join([str(x) for x in self.operands])
