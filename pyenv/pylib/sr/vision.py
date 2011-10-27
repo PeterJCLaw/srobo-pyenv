@@ -71,6 +71,14 @@ class Marker(MarkerBase):
         self.dist = self.centre.polar.length
         self.rot_y = self.centre.polar.rot_y
 
+class Timer(object):
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, t, v, tb):
+        self.time = time.time() - self.start
+        return False
+
 class Vision(object):
     def __init__(self, camdev, lib):
         self.koki = pykoki.PyKoki(lib)
@@ -139,25 +147,36 @@ class Vision(object):
 
         return lut[code].size
 
-    def see(self, mode, res):
+    def see(self, mode, res, stats):
         self.lock.acquire()
         self._set_res(res)
 
         acq_time = time.time()
-        frame = self.koki.v4l_get_frame_array( self.fd, self._buffers )
-        img = self.koki.v4l_YUYV_frame_to_RGB_image( frame, self._res[0], self._res[1] )
+
+        timer = Timer()
+        times = {}
+
+        with timer:
+            frame = self.koki.v4l_get_frame_array( self.fd, self._buffers )
+        times["cam"] = timer.time
+
+        with timer:
+            img = self.koki.v4l_YUYV_frame_to_RGB_image( frame, self._res[0], self._res[1] )
+        times["yuyv"] = timer.time
+
         # Now that we're dealing with a copy of the image, release the camera lock
         self.lock.release()
 
-        t1 = time.time()
         params = CameraParams( Point2Df( self._res[0]/2,
                                          self._res[1]/2 ),
                                Point2Df( *camera_focal_length[ self._res ] ),
                                Point2Di( *self._res ) )
 
-        markers = self.koki.find_markers_fp( img,
-                                             functools.partial( self._width_from_code, marker_luts[mode] ),
-                                             params )
+        with timer:
+            markers = self.koki.find_markers_fp( img,
+                                                 functools.partial( self._width_from_code, marker_luts[mode] ),
+                                                 params )
+        times["find_markers"] = timer.time
 
         srmarkers = []
         for m in markers:
@@ -199,4 +218,8 @@ class Vision(object):
             srmarkers.append(marker)
 
         self.koki.image_free(img)
+
+        if stats:
+            return (srmarkers, times)
+
         return srmarkers

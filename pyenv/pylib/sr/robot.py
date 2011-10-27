@@ -110,6 +110,7 @@ class Robot(object):
 
         self.vision = v
 
-    def see(self, res = (800,600)):
+    def see(self, res = (800,600), stats = False):
         return self.vision.see( res = res,
-                                mode = self.mode )
+                                mode = self.mode,
+                                stats = stats )
