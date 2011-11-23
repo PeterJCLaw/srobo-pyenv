@@ -21,6 +21,9 @@ class Robot(object):
         self._parse_cmdline()
         if wait_start:
             self._wait_start()
+        else:
+            self.mode = "dev"
+            self.zone = 0
 
     def _dump_bus(self):
         "Write the contents of the SRIC bus out to stdout"
