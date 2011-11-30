@@ -100,6 +100,10 @@ class Vision(object):
         self._start()
         self.lock.release()
 
+    def __del__(self):
+        self._stop()
+        self.koki.v4l_close_cam(self.fd)
+
     def _set_res(self, res):
         "Set the resolution of the camera if different to what we were"
         if res == self._res:
