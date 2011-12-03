@@ -1,7 +1,6 @@
 from ctypes import *
 import os
 from v4l2 import v4l2
-from cxcore import *
 
 KOKI_MARKER_GRID_WIDTH = 10
 
@@ -206,7 +205,7 @@ class PyKoki:
 
         # IplImage *koki_v4l_YUYV_frame_to_RGB_image(uint8_t *frame, uint16_t w, uint16_t h)
         l.koki_v4l_YUYV_frame_to_RGB_image.argtypes = [POINTER(c_uint8), c_uint16, c_uint16]
-        l.koki_v4l_YUYV_frame_to_RGB_image.restype = POINTER(IplImage)
+        l.koki_v4l_YUYV_frame_to_RGB_image.restype = c_void_p
 
         # GPtrArray* koki_find_markers(IplImage *frame, float marker_width,
         #                              koki_camera_params_t *params)
