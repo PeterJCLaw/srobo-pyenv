@@ -2,6 +2,14 @@
 # Routines for invoking flashb and thus updating board firmware.
 import subprocess, os.path
 
+def update_with_gui( root, bin_dir, log_dir ):
+    p = subprocess.Popen( [ os.path.join( bin_dir, "fwsplash" ) ] )
+
+    update_power( root, bin_dir, log_dir )
+
+    p.kill()
+    p.wait()
+
 def update_power( root, bin_dir, log_dir ):
     fwlog = open( os.path.join( log_dir, "fw-log.txt" ) , "at")
 

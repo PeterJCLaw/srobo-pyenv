@@ -88,9 +88,9 @@ robot = Popen( ["python", "-m", "sr.loggrok",
 Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
        shell = True )
 
-fw.update_power( root = PROG_DIR,
-                 bin_dir = BIN_DIR,
-                 log_dir = LOG_DIR )
+fw.update_with_gui( root = PROG_DIR,
+                    bin_dir = BIN_DIR,
+                    log_dir = LOG_DIR )
 
 if os.path.isfile(ROBOT_RUNNING):
     "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
