@@ -3,6 +3,7 @@ CMD_PLAY_PIEZO = 6
 CMD_SET_LEDS = 7
 CMD_SET_MOTOR_RAIL = 8
 CMD_GET_LEDS = 9
+CMD_GET_VI = 10
 
 class LedList(object):
     def __init__(self, dev=None):
@@ -43,10 +44,33 @@ class LedList(object):
         rx = self.dev.txrx( tx )
         return rx[0]
 
+class Battery(object):
+    def __init__(self, dev=None):
+        self.dev = dev
+
+    @property
+    def voltage(self):
+        return round(self._get_vi()[0], 2)
+
+    @property
+    def current(self):
+        return round(self._get_vi()[1], 2)
+
+    def _get_vi(self):
+        """Read the battery voltage and current from the power board.
+	Return the values in a tuple."""
+        r = self.dev.txrx( [ CMD_GET_VI ] )
+
+	# Use scaling values stated in monitor.h of power-fw.git
+        v = (r[0] | (r[1] << 8)) * 0.0036621
+        i = (r[2] | (r[3] << 8)) * 0.012201
+        return v, i
+
 class Power:
     def __init__(self, dev):
         self.dev = dev
         self.led = LedList(dev)
+        self.battery = Battery(dev)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
