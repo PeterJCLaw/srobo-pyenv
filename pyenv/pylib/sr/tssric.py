@@ -2,6 +2,7 @@
 import pysric, threading
 
 class TSSricDevice(object):
+    """A wrapper around a SRIC device that uses a threadlocal sricd connection"""
     def __init__(self, sricman, address, devtype ):
         self._address = address
         self._devtype = devtype
