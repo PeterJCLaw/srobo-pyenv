@@ -87,7 +87,7 @@ class SricCtxMan(object):
             for devclass, devlist in ps.devices.iteritems():
                 self._devices[devclass] = []
 
-                if devclass in ():
+                if devclass in ( pysric.SRIC_CLASS_JOINTIO ):
                     "This type of device requires locking for transactions"
                     wrapper = LockableDev
                 else:

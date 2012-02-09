@@ -210,13 +210,15 @@ class InputPin(object):
     @property
     def a(self):
         "Return the analogue reading for this pin"
-        v = self.jio._inputs_read_a()
+        with self.jio.dev.lock:
+            v = self.jio._inputs_read_a()
         return v[self.num]
     
     @property
     def d(self):
         "Return the digital reading of this pin"
-        v = self.jio._inputs_read_d()
+        with self.jio.dev.lock:
+            v = self.jio._inputs_read_d()
         return v[self.num]
 
 class OutputPin(object):
@@ -227,18 +229,20 @@ class OutputPin(object):
     @property
     def d(self):
         "Read the current value of the output"
-        return self.jio._output_get()[self.num]
+        with self.jio.dev.lock:
+            return self.jio._output_get()[self.num]
 
     @d.setter
     def d(self, value):
         "Set the value of an output pin"
-        # Get current outputs
-        v = self.jio._output_get_raw()
-        if value:
-            v |= (1<<self.num)
-        else:
-            v &= ~(1<<self.num)
-        self.jio._output_set(v)
+        with self.jio.dev.lock:
+            # Get current outputs
+            v = self.jio._output_get_raw()
+            if value:
+                v |= (1<<self.num)
+            else:
+                v &= ~(1<<self.num)
+            self.jio._output_set(v)
 
 class JointIO(object):
     def __init__(self, dev):
@@ -259,7 +263,7 @@ class JointIO(object):
         self.dev.txrx( [ CMD_OUTPUT_SET, vals ] )
 
     def _output_get(self):
-        r = self.dev.txrx( [ CMD_OUTPUT_GET ] ) 
+        r = self.dev.txrx( [ CMD_OUTPUT_GET ] )
         b = []
         for x in range(0,8):
             if r[0] & (1<<x):
