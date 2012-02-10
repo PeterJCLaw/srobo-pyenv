@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, time, shutil
-import sricd, json
+import sricd, json, fw
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -83,15 +83,21 @@ sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 if os.path.exists( START_FIFO ):
     os.unlink( START_FIFO )
 
+Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+       shell = True )
+
+if fw.update_with_gui( root = PROG_DIR,
+                       bin_dir = BIN_DIR,
+                       log_dir = LOG_DIR ):
+    "Everything could have changed, so restart the bus"
+    sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
 print "Running user code."
 robot = Popen( ["python", "-m", "sr.loggrok",
                 USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
                cwd = USER_DIR,
                stdout = sys.stdout,
                stderr = sys.stderr )
-
-Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
-       shell = True )
 
 if os.path.isfile(ROBOT_RUNNING):
     "sr-ts uses the ROBOT_RUNNING file to determine if we're running"

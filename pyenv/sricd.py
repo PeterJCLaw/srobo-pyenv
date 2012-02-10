@@ -4,7 +4,7 @@ import os, signal
 import time, sys
 PID_FILE = "/tmp/sricd.pid"
 
-def _kill():
+def kill():
     "Kill sricd"
     print "Killing sricd"
     sys.stdout.flush()
@@ -14,7 +14,7 @@ def _kill():
         pid = int( f.read() )
         f.close()
 
-        os.kill( pid, signal.SIGTERM )
+        os.kill( pid, signal.SIGKILL )
     else:
         print "sricd file doesn't exist"
 
@@ -26,3 +26,7 @@ def start(logfile):
                stdin = open("/dev/null", "r"),
                stdout = out, stderr = out, shell = True )
     p.wait()
+
+def restart(logfile):
+    kill()
+    start(logfile)
