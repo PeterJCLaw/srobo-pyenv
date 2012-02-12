@@ -22,6 +22,10 @@ class TSSricDevice(object):
         self._pop_myself()
         return getattr( self._tl.dev, name )
 
+    def txrx( self, *args, **kw ):
+        self._pop_myself()
+        return self._tl.dev.txrx( *args, **kw )
+
 class LockableDev(TSSricDevice):
     """A TSSricDevice with a lock for its users to use
 
@@ -44,7 +48,7 @@ class LockableDev(TSSricDevice):
         elsewhere."""
 
         assert self.lock.locked()
-        return TSSricDevice.txrx( self, *args, **kw )
+        return super( LockableDev, self ).txrx( *args, **kw )
 
 class SricCtxMan(object):
     """Class for storing/managing one sric context per thread"""
