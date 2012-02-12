@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import optparse, sys, os, os.path, time
+import optparse, sys, os, os.path, time, shutil
 import sricd, json, fw
 import addcr
 import subprocess
@@ -27,6 +27,7 @@ PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 START_FIFO = "/tmp/robot-start"
+VAR_DIR = os.path.join( PROG_DIR, "var")
 
 if not args.debug:
     if os.path.exists( LOG_FNAME ):
@@ -72,6 +73,10 @@ if not os.access( os.path.join( BIN_DIR, "sricd" ), os.X_OK ):
 if not os.path.exists( USER_EXEC ):
     "No robot code around"
     raise Exception( "No robot code found." )
+
+# Copy ldconfig cache over
+shutil.copyfile( os.path.join( VAR_DIR, "ld.so.cache" ),
+                 "/var/volatile/run/ld.so.cache" )
 
 sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
