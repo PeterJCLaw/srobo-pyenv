@@ -257,7 +257,8 @@ class JointIO(object):
         self.input = tuple( inputs )
         self.output = tuple( outputs )
 
-        self._smps_control(True)
+        with self.dev.lock:
+            self._smps_control(True)
 
     def _output_set(self, vals):
         self.dev.txrx( [ CMD_OUTPUT_SET, vals ] )
