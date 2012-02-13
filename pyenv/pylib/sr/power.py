@@ -71,6 +71,7 @@ class Power:
         self.dev = dev
         self.led = LedList(dev)
         self.battery = Battery(dev)
+        self._set_motor_rail(True)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
@@ -101,3 +102,7 @@ class Power:
 
         self.dev.txrx( tx )
 
+    def _set_motor_rail(self, en):
+        """Enable/disable the motor rail on the power board"""
+        tx = [CMD_SET_MOTOR_RAIL, bool(en)]
+        self.dev.txrx(tx)
