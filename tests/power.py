@@ -1,5 +1,6 @@
 import unittest
 import sr
+from sr.tssric import LockableDev
 
 class PowerTest(unittest.TestCase):
     "Tests of the power board API"
@@ -28,4 +29,13 @@ class PowerTest(unittest.TestCase):
         "Check we can enqueue more than one beep"
         self.power.beep( [ (1000, 0.1), (1500, 0.2) ] )
 
+    def test_lockabledev(self):
+        "Check we are using a lockable device for the power board"
+        self.assertTrue( isinstance( self.power.dev, LockableDev ) )
+
+    def test_lock_use(self):
+        "Check that the device must get locked before use"
+
+        self.assertRaises( AssertionError,
+                           self.power.led._get_leds_nolock )
 
