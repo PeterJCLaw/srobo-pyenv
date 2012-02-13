@@ -74,7 +74,7 @@ class SricCtxMan(object):
 
             for devs in ps.devices.values():
                 for dev in devs:
-                    assert dev.address not in dev
+                    assert dev.address not in self.store.addr
                     self.store.addr[dev.address] = dev
 
         return self.store.addr[addr]
