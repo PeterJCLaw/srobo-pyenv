@@ -4,6 +4,7 @@ CMD_SET_LEDS = 7
 CMD_SET_MOTOR_RAIL = 8
 CMD_GET_LEDS = 9
 CMD_GET_VI = 10
+CMD_GET_STACK = 11
 
 class LedList(object):
     def __init__(self, dev=None):
@@ -106,3 +107,9 @@ class Power:
         """Enable/disable the motor rail on the power board"""
         tx = [CMD_SET_MOTOR_RAIL, bool(en)]
         self.dev.txrx(tx)
+
+    def _get_stack_usage(self):
+        """Return the stack space and max used stack space"""
+        tx = [CMD_GET_STACK]
+        r = self.dev.txrx(tx)
+        return (r[0] | (r[1]<<8)), (r[2] | (r[3]<<8))
