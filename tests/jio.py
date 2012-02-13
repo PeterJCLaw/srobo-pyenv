@@ -1,5 +1,6 @@
 import unittest
 import sr
+from sr.tssric import LockableDev
 
 class JointIOTest(unittest.TestCase):
     "Tests of the JointIO API"
@@ -39,3 +40,7 @@ class JointIOTest(unittest.TestCase):
         self.assertTrue( isinstance( v, float ) )
         self.assertTrue( v >= 0 )
         self.assertTrue( v <= 3.3 )
+
+    def test_lockabledev(self):
+        "Check we are using a lockable device for the jointio board"
+        self.assertTrue( isinstance( self.io.dev, LockableDev ) )
