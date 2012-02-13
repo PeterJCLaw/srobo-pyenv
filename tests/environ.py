@@ -12,8 +12,12 @@ class EnvironTest(unittest.TestCase):
         # when stdout is a tty, as the munging isn't done on that
 
         if not sys.stdout.isatty():
-            self.assertTrue( isinstance( sys.stdout,
-                                         sr.loggrok.AddCRFlusher ) )
+            "Output munching doesn't happen when on a terminal"
+
+            # Because of the interesting route that we got into this
+            # execution environment, things like isinstance() won't work.
+            # So, use string comparison instead!
+            self.assertTrue( sys.stdout.__class__.__name__ == "AddCRFlusher" )
 
     def test_assert_works(self):
         """Check that assert works
