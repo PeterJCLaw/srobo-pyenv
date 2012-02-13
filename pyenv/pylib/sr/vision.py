@@ -164,7 +164,7 @@ class Vision(object):
         times["cam"] = timer.time
 
         with timer:
-            img = self.koki.v4l_YUYV_frame_to_RGB_image( frame, self._res[0], self._res[1] )
+            img = self.koki.v4l_YUYV_frame_to_grayscale_image( frame, self._res[0], self._res[1] )
         times["yuyv"] = timer.time
 
         # Now that we're dealing with a copy of the image, release the camera lock

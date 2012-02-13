@@ -207,6 +207,10 @@ class PyKoki:
         l.koki_v4l_YUYV_frame_to_RGB_image.argtypes = [POINTER(c_uint8), c_uint16, c_uint16]
         l.koki_v4l_YUYV_frame_to_RGB_image.restype = c_void_p
 
+        # IplImage *koki_v4l_YUYV_frame_to_grayscale_image(uint8_t *frame, uint16_t w, uint16_t h)
+        l.koki_v4l_YUYV_frame_to_grayscale_image.argtypes = [POINTER(c_uint8), c_uint16, c_uint16]
+        l.koki_v4l_YUYV_frame_to_grayscale_image.restype = c_void_p
+
         # GPtrArray* koki_find_markers(IplImage *frame, float marker_width,
         #                              koki_camera_params_t *params)
         l.koki_find_markers.argtypes = [c_void_p, c_float, POINTER(CameraParams)]
@@ -271,6 +275,9 @@ class PyKoki:
 
     def v4l_YUYV_frame_to_RGB_image(self, frame, w, h):
         return self.libkoki.koki_v4l_YUYV_frame_to_RGB_image(frame, w, h)
+
+    def v4l_YUYV_frame_to_grayscale_image(self, frame, w, h):
+        return self.libkoki.koki_v4l_YUYV_frame_to_grayscale_image(frame, w, h)
 
     def image_free(self, img):
         self.libkoki.koki_image_free(img)
