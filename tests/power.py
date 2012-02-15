@@ -57,3 +57,9 @@ class PowerTest(unittest.TestCase):
         i = self.power.battery.current
 
         self.assertTrue( isinstance( i, float ) )
+
+    def test_stack_usage(self):
+        "Check that we can read stack usage"
+        u = self.power._get_stack_usage()
+
+        self.assertTrue( u.peak_use < u.allocated )
