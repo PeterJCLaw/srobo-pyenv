@@ -39,3 +39,21 @@ class PowerTest(unittest.TestCase):
         self.assertRaises( AssertionError,
                            self.power.led._get_leds_nolock )
 
+    def test_battery_voltage(self):
+        "Check that battery voltage reading works"
+        v = self.power.voltage
+
+        self.assertTrue( isinstance( v, float ) )
+
+        # The voltage can't be negative
+        self.assertTrue( v >= 0 )
+
+        # Make sure it's reasonably under max
+        # (this is not the true maximum)
+        self.assertTrue( v <= 20 )
+
+    def test_battery_current(self):
+        "Check that battery current reading works"
+        i = self.power.current
+
+        self.assertTrue( isinstance( i, float ) )
