@@ -1,8 +1,12 @@
+import collections
+
 CMD_ENABLE_INPUT_NOTES = 5
 CMD_PLAY_PIEZO = 6
 CMD_SET_LEDS = 7
 CMD_SET_MOTOR_RAIL = 8
 CMD_GET_LEDS = 9
+CMD_GET_VI = 10
+CMD_GET_STACK = 11
 
 class LedList(object):
     def __init__(self, dev=None):
@@ -51,10 +55,41 @@ class LedList(object):
         rx = self.dev.txrx( tx )
         return rx[0]
 
+class Battery(object):
+    def __init__(self, dev=None):
+        self.dev = dev
+
+    @property
+    def voltage(self):
+        return round(self._get_vi()[0], 2)
+
+    @property
+    def current(self):
+        return round(self._get_vi()[1], 2)
+
+    def _get_vi(self):
+        """Read the battery voltage and current from the power board.
+	Return the values in a tuple."""
+        with self.dev.lock:
+            r = self.dev.txrx( [ CMD_GET_VI ] )
+
+	# Use scaling values stated in monitor.h of power-fw.git
+        v = (r[0] | (r[1] << 8)) * 0.0036621
+        i = (r[2] | (r[3] << 8)) * 0.012201
+        return v, i
+
+# Stack Usage namedtuple
+# Fields:
+#  - allocated: The maximum amount of RAM that can safely be used by the MSP
+#  - peak_use: The peak amount of stack used by the MSP
+StackUsage = collections.namedtuple("StackUsage", ["allocated", "peak_use"])
+
 class Power:
     def __init__(self, dev):
         self.dev = dev
         self.led = LedList(dev)
+        self.battery = Battery(dev)
+        self._set_motor_rail(True)
 
     def beep( self, freq = 1000, dur = 0.1 ):
         "Beep"
@@ -86,3 +121,15 @@ class Power:
         with self.dev.lock:
             self.dev.txrx( tx )
 
+    def _set_motor_rail(self, en):
+        """Enable/disable the motor rail on the power board"""
+        tx = [CMD_SET_MOTOR_RAIL, bool(en)]
+        with self.dev.lock:
+            self.dev.txrx(tx)
+
+    def _get_stack_usage(self):
+        """Return the stack space and max used stack space"""
+        tx = [CMD_GET_STACK]
+        with self.dev.lock:
+            r = self.dev.txrx(tx)
+        return StackUsage( r[0] | (r[1]<<8), r[2] | (r[3]<<8) )
