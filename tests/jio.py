@@ -9,6 +9,9 @@ class JointIOTest(unittest.TestCase):
         self.R = sr.Robot( wait_start = False, quiet = True )
         self.io = self.R.io[0]
 
+    def tearDown(self):
+        del self.R
+
     def test_input_num(self):
         "Check input list is the correct length"
         self.assertTrue( len( self.io.input ) == 8 )

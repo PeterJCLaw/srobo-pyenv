@@ -9,6 +9,9 @@ class PowerTest(unittest.TestCase):
         self.R = sr.Robot( wait_start = False, quiet = True )
         self.power = self.R.power
 
+    def tearDown(self):
+        del self.R
+
     def test_led_set(self):
         "Check we can set an LED"
         self.power.led[0] = 1
