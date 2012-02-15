@@ -68,7 +68,8 @@ class Battery(object):
     def _get_vi(self):
         """Read the battery voltage and current from the power board.
 	Return the values in a tuple."""
-        r = self.dev.txrx( [ CMD_GET_VI ] )
+        with self.dev.lock:
+            r = self.dev.txrx( [ CMD_GET_VI ] )
 
 	# Use scaling values stated in monitor.h of power-fw.git
         v = (r[0] | (r[1] << 8)) * 0.0036621
@@ -115,10 +116,12 @@ class Power:
     def _set_motor_rail(self, en):
         """Enable/disable the motor rail on the power board"""
         tx = [CMD_SET_MOTOR_RAIL, bool(en)]
-        self.dev.txrx(tx)
+        with self.dev.lock:
+            self.dev.txrx(tx)
 
     def _get_stack_usage(self):
         """Return the stack space and max used stack space"""
         tx = [CMD_GET_STACK]
-        r = self.dev.txrx(tx)
+        with self.dev.lock:
+            r = self.dev.txrx(tx)
         return (r[0] | (r[1]<<8)), (r[2] | (r[3]<<8))
