@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, time, shutil
-import sricd, json, fw
+import sricd, json, fw, log
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -32,14 +32,8 @@ VAR_DIR = os.path.join( PROG_DIR, "var")
 if not args.debug:
     if os.path.exists( LOG_FNAME ):
         "Move old log file to log.txt.N"
-        n = 1
-        while True:
-            "Find a log file that doesn't exist"
-            f = "%s.old.%i" % (LOG_FNAME, n)
-            if not os.path.exists( f ):
-                break
-            n += 1
-        os.rename( LOG_FNAME, f )
+        log.move_old_logfile( LOG_FNAME,
+                              old_log_dir = os.path.join( LOG_DIR, "old-logs" ) )
 
     "Put stdout and stderr into log file"
     sys.stderr = sys.stdout = addcr.AddCRWriter(open( LOG_FNAME, "at", 1))
