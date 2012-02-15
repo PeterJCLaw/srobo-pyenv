@@ -1,3 +1,5 @@
+import collections
+
 CMD_ENABLE_INPUT_NOTES = 5
 CMD_PLAY_PIEZO = 6
 CMD_SET_LEDS = 7
@@ -76,6 +78,12 @@ class Battery(object):
         i = (r[2] | (r[3] << 8)) * 0.012201
         return v, i
 
+# Stack Usage namedtuple
+# Fields:
+#  - allocated: The maximum amount of RAM that can safely be used by the MSP
+#  - peak_use: The peak amount of stack used by the MSP
+StackUsage = collections.namedtuple("StackUsage", ["allocated", "peak_use"])
+
 class Power:
     def __init__(self, dev):
         self.dev = dev
@@ -124,4 +132,4 @@ class Power:
         tx = [CMD_GET_STACK]
         with self.dev.lock:
             r = self.dev.txrx(tx)
-        return (r[0] | (r[1]<<8)), (r[2] | (r[3]<<8))
+        return StackUsage( r[0] | (r[1]<<8), r[2] | (r[3]<<8) )
