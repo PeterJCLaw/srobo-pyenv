@@ -9,10 +9,13 @@ class Robot(object):
     def __init__( self,
                   wait_start = True,
                   init_vision = True,
-                  camera_dev = "/dev/video0" ):
+                  camera_dev = "/dev/video0",
+                  quiet = False ):
+        self._quiet = quiet
         self.sricman = tssric.SricCtxMan()
 
-        self._dump_bus()
+        if not self._quiet:
+            self._dump_bus()
         self._init_devs()
 
         if init_vision:

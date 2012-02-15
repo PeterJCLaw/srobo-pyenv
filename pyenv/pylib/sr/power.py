@@ -17,19 +17,20 @@ class LedList(object):
         if idx > 2 or idx < 0:
             raise IndexError("The powerboard only has 3 LEDs")
 
-        # Fetch current status of led
-        r = self._get_leds()
-        bit = bool( r & (1 << idx) )
+        with self.dev.lock:
+            # Fetch current status of led
+            r = self._get_leds_nolock()
+            bit = bool( r & (1 << idx) )
 
-        # Normalise val
-        val = bool(val)
+            # Normalise val
+            val = bool(val)
 
-        if (bit != val):
-            flags = r & (~(1 << idx))
-            if val:
-                flags |= (1 << idx)
-            tx = [ CMD_SET_LEDS, flags ]
-            self.dev.txrx( tx )
+            if (bit != val):
+                flags = r & (~(1 << idx))
+                if val:
+                    flags |= (1 << idx)
+                tx = [ CMD_SET_LEDS, flags ]
+                self.dev.txrx( tx )
 
     def __getitem__(self, idx):
         if idx > 2 or idx < 0:
@@ -41,6 +42,13 @@ class LedList(object):
     def _get_leds(self):
         """Read the state of all the LEDs.
         Return the values in a bitmask."""
+        with self.dev.lock:
+            return self._get_leds_nolock()
+
+    def _get_leds_nolock(self):
+        """Read the state of all the LEDs
+        But don't acquire the device lock."""
+
         tx = [ CMD_GET_LEDS ]
         rx = self.dev.txrx( tx )
         return rx[0]
@@ -101,7 +109,8 @@ class Power:
             # Volume (fixed right now)
             tx.append( 5 )
 
-        self.dev.txrx( tx )
+        with self.dev.lock:
+            self.dev.txrx( tx )
 
     def _set_motor_rail(self, en):
         """Enable/disable the motor rail on the power board"""
