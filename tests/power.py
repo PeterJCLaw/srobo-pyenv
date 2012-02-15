@@ -41,7 +41,7 @@ class PowerTest(unittest.TestCase):
 
     def test_battery_voltage(self):
         "Check that battery voltage reading works"
-        v = self.power.voltage
+        v = self.power.battery.voltage
 
         self.assertTrue( isinstance( v, float ) )
 
@@ -54,6 +54,6 @@ class PowerTest(unittest.TestCase):
 
     def test_battery_current(self):
         "Check that battery current reading works"
-        i = self.power.current
+        i = self.power.battery.current
 
         self.assertTrue( isinstance( i, float ) )
