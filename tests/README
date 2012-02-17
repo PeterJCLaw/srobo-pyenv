@@ -1,0 +1,17 @@
+pyenv Environment Unit Tests
+----------------------------
+
+This directory contains some "user code" that performs a series of
+unit tests against the environment which it is run in.
+
+The steps to run these tests are as follows:
+
+1) Create a robot.zip containing the tests:
+   ./make-zip tests robot.zip
+2) Put the robot.zip on a USB key and then said USB key into a robot
+3) Press the start-button on the robot, and observe that the tests are
+   run.
+
+Some of these unit tests use some non-public parts of the API
+(i.e. undocumented and lacking any kind of stability guarantee).
+These are (and should) only (be) used where necessary.
