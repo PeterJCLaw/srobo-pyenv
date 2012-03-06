@@ -3,6 +3,12 @@ import json, sys, optparse, time, os, glob
 import pysric, tssric
 import motor, power, servo, jointio, vision
 
+class NoCameraPresent(Exception):
+    "Camera not connected."
+
+    def __str__(self):
+        return "No camera found."
+
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
 
@@ -117,6 +123,9 @@ class Robot(object):
         self.vision = v
 
     def see(self, res = (800,600), stats = False):
+        if not hasattr( self, "vision" ):
+            raise NoCameraPresent()
+
         return self.vision.see( res = res,
                                 mode = self.mode,
                                 stats = stats )
