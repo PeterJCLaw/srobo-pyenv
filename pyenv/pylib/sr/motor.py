@@ -55,3 +55,6 @@ class Motor(object):
         if self.target == 0:
             "Implement the new braking setting"
             self.target = 0
+
+    def __del__(self):
+        self.target = 0
