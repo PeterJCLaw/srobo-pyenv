@@ -27,6 +27,7 @@ PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 START_FIFO = "/tmp/robot-start"
+MODE_FILE = "/tmp/robot-mode"
 VAR_DIR = os.path.join( PROG_DIR, "var")
 
 if not args.debug:
@@ -74,8 +75,10 @@ shutil.copyfile( os.path.join( VAR_DIR, "ld.so.cache" ),
 
 sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
 
-if os.path.exists( START_FIFO ):
-    os.unlink( START_FIFO )
+# Remove files we don't want to be around
+for fname in [ START_FIFO, MODE_FILE ]:
+    if os.path.exists( fname ):
+        os.unlink( fname )
 
 Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
        shell = True )
@@ -100,7 +103,7 @@ if os.path.isfile(ROBOT_RUNNING):
 # Start the task-switcher
 Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
 # Start the GUI
-disp = Popen( ["squidge", LOG_FNAME] , stdin=subprocess.PIPE)
+disp = Popen( ["squidge", LOG_FNAME, MODE_FILE] , stdin=subprocess.PIPE)
 # Funnel button presses through to X
 Popen( "srinput" )
 
@@ -114,14 +117,23 @@ open(ROBOT_RUNNING,"w").close()
 #Feed display a newline now that code is to be run
 disp.stdin.write("\n")
 
+# Wait for the GUI to send us the information we want
+while not os.path.exists( MODE_FILE ):
+    time.sleep(0.1)
+
+mode_info = json.load( open( MODE_FILE, "r" ) )
+
+print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
+                                mode_info["zone"] )
+
 # Ready for user code to execute, send it useful info:
 while not os.path.exists( START_FIFO ):
-    time.sleep(0.2)
+    time.sleep(0.1)
 
 print "Starting user code."
 with open( START_FIFO, "w" ) as f:
     # Hard-coded data for the moment
-    f.write( json.dumps( { "zone": 0, "mode": "dev" } ) )
+    f.write( json.dumps( mode_info ) )
 
 r = robot.wait()
 print "Robot code exited with code %i" % r
