@@ -82,10 +82,10 @@ class Robot(object):
 
         for devtype, info in mapping.iteritems():
             attrname, cls = info
-            if devtype in self.sricman.devices:
-                l = []
-                setattr( self, attrname, l )
+            l = []
+            setattr( self, attrname, l )
 
+            if devtype in self.sricman.devices:
                 for dev in self.sricman.devices[ devtype ]:
                     l.append( cls( dev ) )
 
