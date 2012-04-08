@@ -29,7 +29,6 @@ LIB_DIR = os.path.join( PROG_DIR, "lib" )
 PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
-START_FIFO = "/tmp/robot-start"
 VAR_DIR = os.path.join( PROG_DIR, "var")
 
 if not args.debug:
@@ -75,7 +74,7 @@ def init_fs():
                      "/var/volatile/run/ld.so.cache" )
 
     # Remove files we don't want to be around
-    for fname in [ START_FIFO, ROBOT_RUNNING ]:
+    for fname in [ ROBOT_RUNNING ]:
         if os.path.exists( fname ):
             os.unlink( fname )
 
@@ -119,7 +118,7 @@ if fw.update_with_gui( root = PROG_DIR,
     "Everything could have changed, so restart the bus"
     sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
 
-user = usercode.UserCode( USER_EXEC, LOG_DIR, START_FIFO, USER_DIR )
+user = usercode.UserCode( USER_EXEC, LOG_DIR, USER_DIR )
 
 print "Running user code."
 

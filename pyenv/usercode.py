@@ -1,17 +1,17 @@
-import subprocess, sys, os, json, time
+import subprocess, sys, os, json, time, tempfile
 from subprocess import Popen, call
 
 class UserCode(object):
     "Object for managing the user's code"
 
-    def __init__(self, user_exec, log_dir, start_fifo, user_dir):
+    def __init__(self, user_exec, log_dir, user_dir):
 
-        self.start_fifo = start_fifo
+        self.start_fifo = tempfile.mktemp()
 
         self.proc = Popen( [ "python", "-m", "sr.loggrok",
                              user_exec,
                              "--usbkey", log_dir,
-                             "--startfifo", start_fifo ],
+                             "--startfifo", self.start_fifo ],
                            cwd = user_dir,
                            stdout = sys.stdout,
                            stderr = sys.stderr )
