@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, time, shutil
-import sricd, json, fw, log
+import sricd, json, fw, log, squidge
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -80,70 +80,20 @@ def init_fs():
         if os.path.exists( fname ):
             os.unlink( fname )
 
-print "Initialising..."
+def start_wm():
+    "Start the window manager"
+    Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+           shell = True )
 
-init_env()
-init_fs()
+def squidge_get_mode():
+    "Wait for and return the match mode info"
+    while not os.path.exists( MODE_FILE ):
+        time.sleep(0.1)
 
-if not os.path.exists( USER_EXEC ):
-    "No robot code around"
-    raise Exception( "No robot code found." )
+    mode_info = json.load( open( MODE_FILE, "r" ) )
 
-sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
-
-Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
-       shell = True )
-
-if fw.update_with_gui( root = PROG_DIR,
-                       bin_dir = BIN_DIR,
-                       log_dir = LOG_DIR ):
-    "Everything could have changed, so restart the bus"
-    sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
-
-print "Running user code."
-robot = Popen( ["python", "-m", "sr.loggrok",
-                USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
-               cwd = USER_DIR,
-               stdout = sys.stdout,
-               stderr = sys.stderr )
-
-# Start the task-switcher
-Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
-# Start the GUI
-disp = Popen( ["squidge", LOG_FNAME, MODE_FILE] , stdin=subprocess.PIPE)
-# Funnel button presses through to X
-Popen( "srinput" )
-
-if not args.immed_start:
-    "Wait for the button press to happen"
-    call("pyenv_start")
-
-#Tell things that code is being run
-open(ROBOT_RUNNING,"w").close()
-
-#Feed display a newline now that code is to be run
-disp.stdin.write("\n")
-
-# Wait for the GUI to send us the information we want
-while not os.path.exists( MODE_FILE ):
-    time.sleep(0.1)
-
-mode_info = json.load( open( MODE_FILE, "r" ) )
-
-print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
-                                mode_info["zone"] )
-
-# Ready for user code to execute, send it useful info:
-while not os.path.exists( START_FIFO ):
-    time.sleep(0.1)
-
-print "Starting user code."
-with open( START_FIFO, "w" ) as f:
-    f.write( json.dumps( mode_info ) )
-    start_time = time.time()
-
-if mode_info["mode"] == "comp":
-    "Competition mode"
+def end_match( start_time, robot ):
+    "End the match when the time comes"
 
     # time.sleep() can sleep for less time than specified
     # so loop calling it several times over
@@ -169,6 +119,66 @@ if mode_info["mode"] == "comp":
     power._set_motor_rail( False )
 
     print "Match ended -- User code killed."
+
+print "Initialising..."
+
+init_env()
+init_fs()
+
+if not os.path.exists( USER_EXEC ):
+    "No robot code around"
+    raise Exception( "No robot code found." )
+
+sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
+
+start_wm()
+
+if fw.update_with_gui( root = PROG_DIR,
+                       bin_dir = BIN_DIR,
+                       log_dir = LOG_DIR ):
+    "Everything could have changed, so restart the bus"
+    sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
+print "Running user code."
+robot = Popen( ["python", "-m", "sr.loggrok",
+                USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
+               cwd = USER_DIR,
+               stdout = sys.stdout,
+               stderr = sys.stderr )
+
+# Start the task-switcher
+Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
+# Start the GUI
+sq = squidge.Squidge( LOG_FNAME, MODE_FILE )
+
+# Funnel button presses through to X
+Popen( "srinput" )
+
+if not args.immed_start:
+    "Wait for the button press to happen"
+    call("pyenv_start")
+
+#Tell things that code is being run
+open(ROBOT_RUNNING,"w").close()
+sq.signal_start();
+
+mode_info = sq.get_mode()
+
+print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
+                                mode_info["zone"] )
+
+# Ready for user code to execute, send it useful info:
+while not os.path.exists( START_FIFO ):
+    time.sleep(0.1)
+
+print "Starting user code."
+with open( START_FIFO, "w" ) as f:
+    f.write( json.dumps( mode_info ) )
+    start_time = time.time()
+
+if mode_info["mode"] == "comp":
+    "Competition mode"
+    end_match( start_time, robot )
 
 r = robot.wait()
 print "Robot code exited with code %i" % r
