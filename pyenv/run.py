@@ -23,19 +23,27 @@ class RobotRunner(object):
         sricd.start( os.path.join( config.log_dir, "sricd.log" ) )
 
         self.start_wm()
+        self.firmware_update()
 
+        self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
+        self.start_gui()
+
+    def firmware_update(self):
+        "Update firmware as necessary"
         if fw.update_with_gui( root = self.config.prog_dir,
                                bin_dir = self.config.bin_dir,
                                log_dir = self.config.log_dir ):
             "Everything could have changed, so restart the bus"
             sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
 
-        self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
+    def start_gui(self):
+        "Start all interactive GUI things"
 
         # Start the task-switcher
         Popen( ["sr-ts", self.config.robot_running],  shell = True )
+
         # Start the GUI
-        self.squidge = squidge.Squidge( config.log_fname )
+        self.squidge = squidge.Squidge( self.config.log_fname )
 
         # Funnel button presses through to X
         Popen( "srinput" )
