@@ -59,7 +59,7 @@ def init_fs():
                      "/var/volatile/run/ld.so.cache" )
 
     # Remove files we don't want to be around
-    for fname in [ START_FIFO, MODE_FILE ]:
+    for fname in [ START_FIFO, MODE_FILE, ROBOT_RUNNING ]:
         if os.path.exists( fname ):
             os.unlink( fname )
 
@@ -103,10 +103,6 @@ robot = Popen( ["python", "-m", "sr.loggrok",
                cwd = USER_DIR,
                stdout = sys.stdout,
                stderr = sys.stderr )
-
-if os.path.isfile(ROBOT_RUNNING):
-    "sr-ts uses the ROBOT_RUNNING file to determine if we're running"
-    os.remove(ROBOT_RUNNING)
 
 # Start the task-switcher
 Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
