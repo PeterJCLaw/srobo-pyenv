@@ -160,9 +160,8 @@ if not args.immed_start:
 
 #Tell things that code is being run
 open(ROBOT_RUNNING,"w").close()
-sq.signal_start();
 
-mode_info = sq.get_mode()
+mode_info = sq.signal_start();
 
 print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
                                 mode_info["zone"] )

@@ -15,7 +15,9 @@ class Squidge(object):
         "Signal to squidge that code is to be run"
         self.proc.stdin.write("\n")
 
-    def get_mode(self):
+        return self._get_mode()
+
+    def _get_mode(self):
         "Get the match mode information from the GUI"
 
         while not os.path.exists( self.mode_file ):
