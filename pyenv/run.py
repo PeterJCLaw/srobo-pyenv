@@ -46,6 +46,23 @@ else:
     if not os.path.exists( LOG_FNAME ):
         open( LOG_FNAME, "w" ).close()
 
+def init_fs():
+    "Initialise/reset the filesystem"
+
+    # Hack around zip not supporting file permissions...
+    if not os.access( os.path.join( BIN_DIR, "sricd" ), os.X_OK ):
+        call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+              shell = True )
+
+    # Copy ldconfig cache over
+    shutil.copyfile( os.path.join( VAR_DIR, "ld.so.cache" ),
+                     "/var/volatile/run/ld.so.cache" )
+
+    # Remove files we don't want to be around
+    for fname in [ START_FIFO, MODE_FILE ]:
+        if os.path.exists( fname ):
+            os.unlink( fname )
+
 print "Initialising..."
 
 # Environment variables that we want:
@@ -63,25 +80,13 @@ if "PATH" not in os.environ:
 # Prefix PATH with our bin directory
 os.environ["PATH"] =  "%s:%s" % ( BIN_DIR, os.environ["PATH"] )
 
-# Hack around zip not supporting file permissions...
-if not os.access( os.path.join( BIN_DIR, "sricd" ), os.X_OK ):
-    call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
-          shell = True )
+init_fs()
 
 if not os.path.exists( USER_EXEC ):
     "No robot code around"
     raise Exception( "No robot code found." )
 
-# Copy ldconfig cache over
-shutil.copyfile( os.path.join( VAR_DIR, "ld.so.cache" ),
-                 "/var/volatile/run/ld.so.cache" )
-
 sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
-
-# Remove files we don't want to be around
-for fname in [ START_FIFO, MODE_FILE ]:
-    if os.path.exists( fname ):
-        os.unlink( fname )
 
 Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
        shell = True )
