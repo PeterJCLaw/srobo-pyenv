@@ -31,7 +31,7 @@ class UserCode(object):
     def end_match(self):
         "End the match by killing the user's code, and dropping the motor rail"
         # End the user's code
-        robot.kill()
+        self.proc.kill()
 
         #### Now kill the motor rail
 
