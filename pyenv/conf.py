@@ -13,3 +13,5 @@ class Config(object):
         self.var_dir = os.path.join( prog_dir, "var")
         
         self.log_fname = os.path.join( log_dir, "log.txt" )
+
+        self.robot_running = "/tmp/robot-running"

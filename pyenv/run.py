@@ -33,7 +33,7 @@ class RobotRunner(object):
         self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
 
         # Start the task-switcher
-        Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
+        Popen( ["sr-ts", self.config.robot_running],  shell = True )
         # Start the GUI
         self.squidge = squidge.Squidge( config.log_fname )
 
@@ -42,7 +42,7 @@ class RobotRunner(object):
 
     def run(self):
         #Tell things that code is being run
-        open(ROBOT_RUNNING,"w").close()
+        open(self.config.robot_running,"w").close()
 
         mode_info = self.squidge.signal_start();
 
@@ -89,7 +89,7 @@ class RobotRunner(object):
                          "/var/volatile/run/ld.so.cache" )
 
         # Remove files we don't want to be around
-        for fname in [ ROBOT_RUNNING ]:
+        for fname in [ self.config.robot_running ]:
             if os.path.exists( fname ):
                 os.unlink( fname )
 
@@ -132,8 +132,6 @@ if __name__ == "__main__":
     args = parse_args()
     config = conf.Config( prog_dir = os.path.abspath( os.path.dirname( __file__ ) ),
                           log_dir = args.log_dir )
-
-    ROBOT_RUNNING = "/tmp/robot-running"
 
     log.init( config.log_fname, config.log_dir, debug = args.debug )
 
