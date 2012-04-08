@@ -1,14 +1,14 @@
-import subprocess, time, json, os
+import subprocess, time, json, os, tempfile
 from subprocess import Popen, call
 
 class Squidge(object):
     "Object for managing the squidge GUI"
 
-    def __init__(self, log_fname, mode_file):
+    def __init__(self, log_fname):
         
-        self.mode_file = mode_file
+        self.mode_file = tempfile.mktemp()
 
-        self.proc = Popen( ["squidge", log_fname, mode_file],
+        self.proc = Popen( ["squidge", log_fname, self.mode_file],
                            stdin=subprocess.PIPE)
 
     def signal_start(self):

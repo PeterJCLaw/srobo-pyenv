@@ -30,7 +30,6 @@ PYLIB_DIR = os.path.join( PROG_DIR, "pylib" )
 USER_DIR = os.path.join( PROG_DIR , "user" )
 USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 START_FIFO = "/tmp/robot-start"
-MODE_FILE = "/tmp/robot-mode"
 VAR_DIR = os.path.join( PROG_DIR, "var")
 
 if not args.debug:
@@ -76,7 +75,7 @@ def init_fs():
                      "/var/volatile/run/ld.so.cache" )
 
     # Remove files we don't want to be around
-    for fname in [ START_FIFO, MODE_FILE, ROBOT_RUNNING ]:
+    for fname in [ START_FIFO, ROBOT_RUNNING ]:
         if os.path.exists( fname ):
             os.unlink( fname )
 
@@ -84,13 +83,6 @@ def start_wm():
     "Start the window manager"
     Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
            shell = True )
-
-def squidge_get_mode():
-    "Wait for and return the match mode info"
-    while not os.path.exists( MODE_FILE ):
-        time.sleep(0.1)
-
-    mode_info = json.load( open( MODE_FILE, "r" ) )
 
 def end_match( start_time, robot ):
     "End the match when the time comes"
@@ -149,7 +141,7 @@ robot = Popen( ["python", "-m", "sr.loggrok",
 # Start the task-switcher
 Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
 # Start the GUI
-sq = squidge.Squidge( LOG_FNAME, MODE_FILE )
+sq = squidge.Squidge( LOG_FNAME )
 
 # Funnel button presses through to X
 Popen( "srinput" )
