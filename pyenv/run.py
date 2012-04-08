@@ -46,6 +46,23 @@ else:
     if not os.path.exists( LOG_FNAME ):
         open( LOG_FNAME, "w" ).close()
 
+def init_env():
+    "Initialise/check environment variables that we want"
+    # Environment variables that we want:
+    envs = { "PYSRIC_LIBDIR": LIB_DIR,
+             "LD_LIBRARY_PATH": LIB_DIR,
+             "PYTHONPATH": PYLIB_DIR,
+             "DISPLAY": ":0.0" }
+    for k,v in envs.iteritems():
+        os.environ[k] = v
+
+    if "PATH" not in os.environ:
+        "The PATH environment variable doesn't make it through when run from udev"
+        os.environ["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+
+    # Prefix PATH with our bin directory
+    os.environ["PATH"] =  "%s:%s" % ( BIN_DIR, os.environ["PATH"] )
+
 def init_fs():
     "Initialise/reset the filesystem"
 
@@ -65,21 +82,7 @@ def init_fs():
 
 print "Initialising..."
 
-# Environment variables that we want:
-envs = { "PYSRIC_LIBDIR": LIB_DIR,
-         "LD_LIBRARY_PATH": LIB_DIR,
-         "PYTHONPATH": PYLIB_DIR,
-         "DISPLAY": ":0.0" }
-for k,v in envs.iteritems():
-    os.environ[k] = v
-
-if "PATH" not in os.environ:
-    "The PATH environment variable doesn't make it through when run from udev"
-    os.environ["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
-
-# Prefix PATH with our bin directory
-os.environ["PATH"] =  "%s:%s" % ( BIN_DIR, os.environ["PATH"] )
-
+init_env()
 init_fs()
 
 if not os.path.exists( USER_EXEC ):
