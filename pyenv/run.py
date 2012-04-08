@@ -110,28 +110,38 @@ class RobotRunner(object):
             else:
                 break
 
-parser = optparse.OptionParser( description = "Run some robot code." )
-parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
-                     help = "Send output to terminal, not logfile." )
-parser.add_option( "-i", "--immed", dest = "immed_start", action = "store_true",
-                     help = "Start user code immediately." )
-parser.add_option( "-l", "--log-dir", dest = "log_dir", default = "./",
-                   help = "Log into the given directory." )
-args, trailing_args = parser.parse_args()
+def parse_args():
+    parser = optparse.OptionParser( description = "Run some robot code." )
+    parser.add_option( "-d", "--debug",
+                       dest = "debug", action = "store_true",
+                       help = "Send output to terminal, not logfile." )
 
-config = conf.Config( prog_dir = os.path.abspath( os.path.dirname( __file__ ) ),
-                      log_dir = args.log_dir )
+    parser.add_option( "-i", "--immed",
+                       dest = "immed_start", action = "store_true",
+                       help = "Start user code immediately." )
 
-USER_EXEC = os.path.join( config.user_dir, "robot.py" )
-ROBOT_RUNNING = "/tmp/robot-running"
+    parser.add_option( "-l", "--log-dir",
+                       dest = "log_dir", default = "./",
+                       help = "Log into the given directory." )
 
-log.init( config.log_fname, config.log_dir, debug = args.debug )
+    args, trailing_args = parser.parse_args()
+    return args
 
-runner = RobotRunner( config,
-                      debug = args.debug )
+if __name__ == "__main__":
+    args = parse_args()
+    config = conf.Config( prog_dir = os.path.abspath( os.path.dirname( __file__ ) ),
+                          log_dir = args.log_dir )
 
-if not args.immed_start:
-    "Wait for the button press to happen"
-    call( "pyenv_start" )
+    USER_EXEC = os.path.join( config.user_dir, "robot.py" )
+    ROBOT_RUNNING = "/tmp/robot-running"
 
-runner.run()
+    log.init( config.log_fname, config.log_dir, debug = args.debug )
+
+    runner = RobotRunner( config,
+                          debug = args.debug )
+
+    if not args.immed_start:
+        "Wait for the button press to happen"
+        call( "pyenv_start" )
+
+    runner.run()
