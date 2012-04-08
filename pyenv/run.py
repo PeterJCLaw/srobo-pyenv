@@ -5,6 +5,9 @@ import addcr
 import subprocess
 from subprocess import Popen, call
 
+# The length of a match in seconds
+MATCH_DURATION = 180
+
 parser = optparse.OptionParser( description = "Run some robot code." )
 parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
                      help = "Send output to terminal, not logfile." )
@@ -132,8 +135,36 @@ while not os.path.exists( START_FIFO ):
 
 print "Starting user code."
 with open( START_FIFO, "w" ) as f:
-    # Hard-coded data for the moment
     f.write( json.dumps( mode_info ) )
+    start_time = time.time()
+
+if mode_info["mode"] == "comp":
+    "Competition mode"
+
+    # time.sleep() can sleep for less time than specified
+    # so loop calling it several times over
+    while True:
+        runtime = (time.time() - start_time)
+
+        if runtime < MATCH_DURATION:
+            time.sleep( MATCH_DURATION - runtime )
+        else:
+            break
+
+    # End the user's code
+    robot.kill()
+
+    #### Now kill the motor rail
+
+    # Augment the import path so we can get to the Power class
+    sys.path.append( PYLIB_DIR )
+    import sr.tssric, sr.power, sr.pysric
+
+    sricman = sr.tssric.SricCtxMan()
+    power = sr.power.Power( sricman.devices[sr.pysric.SRIC_CLASS_POWER][0] )
+    power._set_motor_rail( False )
+
+    print "Match ended -- User code killed."
 
 r = robot.wait()
 print "Robot code exited with code %i" % r
