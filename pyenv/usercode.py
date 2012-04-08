@@ -8,6 +8,7 @@ class UserCode(object):
 
         self.start_fifo = tempfile.mktemp()
 
+        print "Running user code."
         self.proc = Popen( [ "python", "-m", "sr.loggrok",
                              user_exec,
                              "--usbkey", log_dir,

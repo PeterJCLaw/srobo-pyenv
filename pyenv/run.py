@@ -120,8 +120,6 @@ if fw.update_with_gui( root = PROG_DIR,
 
 user = usercode.UserCode( USER_EXEC, LOG_DIR, USER_DIR )
 
-print "Running user code."
-
 # Start the task-switcher
 Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
 # Start the GUI
