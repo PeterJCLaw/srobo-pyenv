@@ -6,6 +6,110 @@ import sricd, fw, log, squidge, usercode, conf
 # The length of a match in seconds
 MATCH_DURATION = 180
 
+class RobotRunner(object):
+    def __init__(self, config, debug):
+        self.config = config
+        self.debug = debug
+
+        print "Initialising..."
+        self.init_env()
+        self.init_fs()
+
+        if not os.path.exists( USER_EXEC ):
+            "No robot code around"
+            raise Exception( "No robot code found." )
+
+        sricd.start( os.path.join( config.log_dir, "sricd.log" ) )
+
+        self.start_wm()
+
+        if fw.update_with_gui( root = self.config.prog_dir,
+                               bin_dir = self.config.bin_dir,
+                               log_dir = self.config.log_dir ):
+            "Everything could have changed, so restart the bus"
+            sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
+        self.user = usercode.UserCode( USER_EXEC, config.log_dir, config.user_dir )
+
+        # Start the task-switcher
+        Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
+        # Start the GUI
+        self.squidge = squidge.Squidge( config.log_fname )
+
+        # Funnel button presses through to X
+        Popen( "srinput" )
+
+    def run(self):
+        #Tell things that code is being run
+        open(ROBOT_RUNNING,"w").close()
+
+        mode_info = self.squidge.signal_start();
+
+        print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
+                                        mode_info["zone"] )
+
+        self.user.start( mode_info )
+        start_time = time.time()
+
+        if mode_info["mode"] == "comp":
+            "Competition mode"
+            self.real_sleep( start_time, MATCH_DURATION )
+            self.user.end_match()
+
+        self.user.wait()
+
+    def init_env(self):
+        "Initialise/check environment variables that we want"
+        # Environment variables that we want:
+        envs = { "PYSRIC_LIBDIR": self.config.lib_dir,
+                 "LD_LIBRARY_PATH": self.config.lib_dir,
+                 "PYTHONPATH": self.config.pylib_dir,
+                 "DISPLAY": ":0.0" }
+        for k,v in envs.iteritems():
+            os.environ[k] = v
+
+        if "PATH" not in os.environ:
+            "The PATH environment variable doesn't make it through when run from udev"
+            os.environ["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+
+        # Prefix PATH with our bin directory
+        os.environ["PATH"] =  "%s:%s" % ( self.config.bin_dir, os.environ["PATH"] )
+
+    def init_fs(self):
+        "Initialise/reset the filesystem"
+
+        # Hack around zip not supporting file permissions...
+        if not os.access( os.path.join( self.config.bin_dir, "sricd" ), os.X_OK ):
+            call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
+                  shell = True )
+
+        # Copy ldconfig cache over
+        shutil.copyfile( os.path.join( self.config.var_dir, "ld.so.cache" ),
+                         "/var/volatile/run/ld.so.cache" )
+
+        # Remove files we don't want to be around
+        for fname in [ ROBOT_RUNNING ]:
+            if os.path.exists( fname ):
+                os.unlink( fname )
+
+    def start_wm( self ):
+        "Start the window manager"
+        Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
+               shell = True )
+
+    def real_sleep( self, start_time, duration ):
+        "Wait for the given amount of time from start_time"
+
+        # time.sleep() can sleep for less time than specified
+        # so loop calling it several times over
+        while True:
+            runtime = (time.time() - start_time)
+
+            if runtime < duration:
+                time.sleep( duration - runtime )
+            else:
+                break
+
 parser = optparse.OptionParser( description = "Run some robot code." )
 parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
                      help = "Send output to terminal, not logfile." )
@@ -31,105 +135,11 @@ else:
     if not os.path.exists( config.log_fname ):
         open( config.log_fname, "w" ).close()
 
-def init_env():
-    "Initialise/check environment variables that we want"
-    # Environment variables that we want:
-    envs = { "PYSRIC_LIBDIR": config.lib_dir,
-             "LD_LIBRARY_PATH": config.lib_dir,
-             "PYTHONPATH": config.pylib_dir,
-             "DISPLAY": ":0.0" }
-    for k,v in envs.iteritems():
-        os.environ[k] = v
-
-    if "PATH" not in os.environ:
-        "The PATH environment variable doesn't make it through when run from udev"
-        os.environ["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
-
-    # Prefix PATH with our bin directory
-    os.environ["PATH"] =  "%s:%s" % ( config.bin_dir, os.environ["PATH"] )
-
-def init_fs():
-    "Initialise/reset the filesystem"
-
-    # Hack around zip not supporting file permissions...
-    if not os.access( os.path.join( config.bin_dir, "sricd" ), os.X_OK ):
-        call( "find %s -type f | xargs chmod u+x" % os.path.dirname(__file__),
-              shell = True )
-
-    # Copy ldconfig cache over
-    shutil.copyfile( os.path.join( config.var_dir, "ld.so.cache" ),
-                     "/var/volatile/run/ld.so.cache" )
-
-    # Remove files we don't want to be around
-    for fname in [ ROBOT_RUNNING ]:
-        if os.path.exists( fname ):
-            os.unlink( fname )
-
-def start_wm():
-    "Start the window manager"
-    Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
-           shell = True )
-
-def real_sleep( start_time, duration ):
-    "Wait for the given amount of time from start_time"
-
-    # time.sleep() can sleep for less time than specified
-    # so loop calling it several times over
-    while True:
-        runtime = (time.time() - start_time)
-
-        if runtime < duration:
-            time.sleep( duration - runtime )
-        else:
-            break
-
-print "Initialising..."
-
-init_env()
-init_fs()
-
-if not os.path.exists( USER_EXEC ):
-    "No robot code around"
-    raise Exception( "No robot code found." )
-
-sricd.start( os.path.join( args.log_dir, "sricd.log" ) )
-
-start_wm()
-
-if fw.update_with_gui( root = config.prog_dir,
-                       bin_dir = config.bin_dir,
-                       log_dir = config.log_dir ):
-    "Everything could have changed, so restart the bus"
-    sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
-
-user = usercode.UserCode( USER_EXEC, config.log_dir, config.user_dir )
-
-# Start the task-switcher
-Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
-# Start the GUI
-sq = squidge.Squidge( config.log_fname )
-
-# Funnel button presses through to X
-Popen( "srinput" )
+runner = RobotRunner( config,
+                      debug = args.debug )
 
 if not args.immed_start:
     "Wait for the button press to happen"
-    call("pyenv_start")
+    call( "pyenv_start" )
 
-#Tell things that code is being run
-open(ROBOT_RUNNING,"w").close()
-
-mode_info = sq.signal_start();
-
-print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
-                                mode_info["zone"] )
-
-user.start( mode_info )
-start_time = time.time()
-
-if mode_info["mode"] == "comp":
-    "Competition mode"
-    real_sleep( start_time, MATCH_DURATION )
-    user.end_match()
-
-user.wait()
+runner.run()
