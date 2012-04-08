@@ -12,7 +12,7 @@ parser = optparse.OptionParser( description = "Run some robot code." )
 parser.add_option( "-d", "--debug", dest = "debug", action = "store_true",
                      help = "Send output to terminal, not logfile." )
 parser.add_option( "-i", "--immed", dest = "immed_start", action = "store_true",
-                     help = "Start user code immediately, rather than waiting for a button press or radio event." )
+                     help = "Start user code immediately." )
 parser.add_option( "-l", "--log-dir", dest = "log_dir", default = "./",
                    help = "Log into the given directory." )
 args, trailing_args = parser.parse_args()
