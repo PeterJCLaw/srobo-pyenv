@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="480"
+   height="272"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="sric-fail.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.3222897"
+     inkscape:cx="239.14079"
+     inkscape:cy="119.4542"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     showgrid="false"
+     inkscape:window-width="1301"
+     inkscape:window-height="945"
+     inkscape:window-x="1739"
+     inkscape:window-y="65"
+     inkscape:window-maximized="0"
+     showguides="false"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       orientation="1,0"
+       position="50.204581,296.27774"
+       id="guide3012" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="149.90664,109.60155"
+       id="guide3014" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="105.35891,125.1579"
+       id="guide3016" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="99.702056,149.90664"
+       id="guide3018" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="149.90664,83.4386"
+       id="guide3020" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="149.90664,192.33304"
+       id="guide3792" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="74.953319,289.91378"
+       id="guide3794" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="125.1579,285.67114"
+       id="guide3796" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-780.36218)"
+     sodipodi:insensitive="true">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:none"
+       id="rect3002"
+       width="480"
+       height="272"
+       x="0"
+       y="780.36218" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer">
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:25;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 50.204581,192.36827 c 0,0 14.849243,-37.7193 49.497475,-37.7193 34.648234,0 50.204584,37.7193 50.204584,37.7193"
+       id="path3022"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csc" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="path3801"
+       sodipodi:cx="125.1579"
+       sodipodi:cy="79.666962"
+       sodipodi:rx="19.8421"
+       sodipodi:ry="19.8421"
+       d="m 145,79.666962 a 19.8421,19.8421 0 1 1 -39.6842,0 19.8421,19.8421 0 1 1 39.6842,0 z"
+       transform="translate(1.2727125,7.3068692)" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path3801"
+       id="use3843"
+       transform="translate(-52.75,0)"
+       width="480"
+       height="272" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;stroke:none"
+       id="path3855"
+       sodipodi:cx="133.85872"
+       sodipodi:cy="86.526268"
+       sodipodi:rx="5.8610454"
+       sodipodi:ry="5.8610454"
+       d="m 139.71976,86.526268 a 5.8610454,5.8610454 0 1 1 -11.72209,0 5.8610454,5.8610454 0 1 1 11.72209,0 z"
+       transform="translate(-7.4281084,0.4475629)" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;stroke:none"
+       id="path3855-7"
+       sodipodi:cx="133.85872"
+       sodipodi:cy="86.526268"
+       sodipodi:rx="5.8610454"
+       sodipodi:ry="5.8610454"
+       d="m 139.71976,86.526268 a 5.8610454,5.8610454 0 1 1 -11.72209,0 5.8610454,5.8610454 0 1 1 11.72209,0 z"
+       transform="translate(-60.178108,0.4475629)" />
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:CMU Sans Serif;-inkscape-font-specification:CMU Sans Serif Medium"
+       x="214.77896"
+       y="113.18457"
+       id="text3877"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="214.77896"
+         y="113.18457"
+         id="tspan3891" /></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3893"
+       style="fill:#ffffff;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:CMU Sans Serif;font-style:normal;font-weight:500;font-size:14px;line-height:125%;letter-spacing:0px;word-spacing:0px;-inkscape-font-specification:CMU Sans Serif Medium;font-stretch:normal;font-variant:normal"><flowRegion
+         id="flowRegion3895"><rect
+           id="rect3897"
+           width="204.94753"
+           height="92.264198"
+           x="204.94753"
+           y="172.17316"
+           style="fill:#ffffff;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara3899"></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3901"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:CMU Sans Serif;-inkscape-font-specification:CMU Sans Serif Medium"
+       transform="translate(-10.587695,-59.088583)"><flowRegion
+         id="flowRegion3903"><rect
+           id="rect3905"
+           width="288.1366"
+           height="83.94529"
+           x="189.06598"
+           y="155.53535"
+           style="font-size:16px;fill:#ffffff;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara3907"
+         style="font-size:16px;text-align:center;text-anchor:middle">There's a problem with your SRIC bus.</flowPara><flowPara
+         id="flowPara3914"
+         style="font-size:16px;text-align:center;text-anchor:middle" /><flowPara
+         style="font-size:16px"
+         id="flowPara3920">Check it, then have a look at</flowPara><flowPara
+         style="font-size:16px"
+         id="flowPara3924">http://srobo.org/docs/kit/token_ring</flowPara><flowPara
+         style="font-size:16px"
+         id="flowPara3918" /></flowRoot>  </g>
+</svg>

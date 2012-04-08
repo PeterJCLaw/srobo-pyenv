@@ -11,6 +11,7 @@ class Config(object):
         self.pylib_dir = os.path.join( prog_dir, "pylib" )
         self.user_dir = os.path.join( prog_dir , "user" )
         self.var_dir = os.path.join( prog_dir, "var")
+        self.usr_dir = os.path.join( prog_dir, "usr")
         
         self.log_fname = os.path.join( log_dir, "log.txt" )
 

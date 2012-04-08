@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+# Display an image
+import pygtk, gtk, gobject
+import sys
+
+if len(sys.argv) < 2:
+	print >>sys.stderr, "Usage: imgshow IMG"
+	exit(1)
+
+window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+window.connect("destroy", gtk.main_quit)
+window.set_default_size( 480, 272 )
+
+img = gtk.image_new_from_file( sys.argv[1] )
+
+window.add(img)
+
+window.show_all()
+gtk.main()

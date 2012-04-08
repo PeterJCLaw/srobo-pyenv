@@ -23,10 +23,22 @@ class RobotRunner(object):
         sricd.start( os.path.join( config.log_dir, "sricd.log" ) )
 
         self.start_wm()
+
+        self._test_sric()
         self.firmware_update()
 
         self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
         self.start_gui()
+
+    def _test_sric(self):
+        "Check the SRIC bus works, and display an error if it doesn't."
+        if sricd.test_bus():
+           return
+
+        # Bus is faulty -- show the fail message
+        call( [ "imgshow",
+                os.path.join( self.config.usr_dir,
+                              "share", "sr", "sric-fail.png" ) ] )
 
     def firmware_update(self):
         "Update firmware as necessary"
