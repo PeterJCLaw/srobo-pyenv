@@ -119,21 +119,13 @@ parser.add_option( "-l", "--log-dir", dest = "log_dir", default = "./",
                    help = "Log into the given directory." )
 args, trailing_args = parser.parse_args()
 
-if not os.path.exists( args.log_dir ):
-    os.mkdir( args.log_dir )
-
 config = conf.Config( prog_dir = os.path.abspath( os.path.dirname( __file__ ) ),
                       log_dir = args.log_dir )
 
 USER_EXEC = os.path.join( config.user_dir, "robot.py" )
 ROBOT_RUNNING = "/tmp/robot-running"
 
-if not args.debug:
-    log.init( config.log_fname, config.log_dir )
-else:
-    "Debug mode: ensure that the logfile exists, as some things need it"
-    if not os.path.exists( config.log_fname ):
-        open( config.log_fname, "w" ).close()
+log.init( config.log_fname, config.log_dir, debug = args.debug )
 
 runner = RobotRunner( config,
                       debug = args.debug )
