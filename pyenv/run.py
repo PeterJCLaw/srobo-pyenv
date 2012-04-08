@@ -96,9 +96,6 @@ def real_sleep( start_time, duration ):
         else:
             break
 
-def end_match( start_time, robot ):
-    "End the match when the time comes"
-
 print "Initialising..."
 
 init_env()
