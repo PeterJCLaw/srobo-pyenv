@@ -15,7 +15,8 @@ class RobotRunner(object):
         self.init_env()
         self.init_fs()
 
-        if not os.path.exists( USER_EXEC ):
+        user_exec = os.path.join( config.user_dir, "robot.py" )
+        if not os.path.exists( user_exec ):
             "No robot code around"
             raise Exception( "No robot code found." )
 
@@ -29,7 +30,7 @@ class RobotRunner(object):
             "Everything could have changed, so restart the bus"
             sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
 
-        self.user = usercode.UserCode( USER_EXEC, config.log_dir, config.user_dir )
+        self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
 
         # Start the task-switcher
         Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
@@ -132,7 +133,6 @@ if __name__ == "__main__":
     config = conf.Config( prog_dir = os.path.abspath( os.path.dirname( __file__ ) ),
                           log_dir = args.log_dir )
 
-    USER_EXEC = os.path.join( config.user_dir, "robot.py" )
     ROBOT_RUNNING = "/tmp/robot-running"
 
     log.init( config.log_fname, config.log_dir, debug = args.debug )
