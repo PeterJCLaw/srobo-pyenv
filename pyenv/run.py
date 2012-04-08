@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, time, shutil
-import sricd, json, fw, log, squidge
+import sricd, json, fw, log, squidge, usercode
 import addcr
 import subprocess
 from subprocess import Popen, call
@@ -84,33 +84,21 @@ def start_wm():
     Popen( "matchbox-window-manager -use_titlebar no -use_cursor no",
            shell = True )
 
-def end_match( start_time, robot ):
-    "End the match when the time comes"
+def real_sleep( start_time, duration ):
+    "Wait for the given amount of time from start_time"
 
     # time.sleep() can sleep for less time than specified
     # so loop calling it several times over
     while True:
         runtime = (time.time() - start_time)
 
-        if runtime < MATCH_DURATION:
-            time.sleep( MATCH_DURATION - runtime )
+        if runtime < duration:
+            time.sleep( duration - runtime )
         else:
             break
 
-    # End the user's code
-    robot.kill()
-
-    #### Now kill the motor rail
-
-    # Augment the import path so we can get to the Power class
-    sys.path.append( PYLIB_DIR )
-    import sr.tssric, sr.power, sr.pysric
-
-    sricman = sr.tssric.SricCtxMan()
-    power = sr.power.Power( sricman.devices[sr.pysric.SRIC_CLASS_POWER][0] )
-    power._set_motor_rail( False )
-
-    print "Match ended -- User code killed."
+def end_match( start_time, robot ):
+    "End the match when the time comes"
 
 print "Initialising..."
 
@@ -131,12 +119,9 @@ if fw.update_with_gui( root = PROG_DIR,
     "Everything could have changed, so restart the bus"
     sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
 
+user = usercode.UserCode( USER_EXEC, LOG_DIR, START_FIFO, USER_DIR )
+
 print "Running user code."
-robot = Popen( ["python", "-m", "sr.loggrok",
-                USER_EXEC, "--usbkey", LOG_DIR, "--startfifo", START_FIFO],
-               cwd = USER_DIR,
-               stdout = sys.stdout,
-               stderr = sys.stderr )
 
 # Start the task-switcher
 Popen( ["sr-ts", ROBOT_RUNNING],  shell = True )
@@ -158,18 +143,12 @@ mode_info = sq.signal_start();
 print "Mode: %s\t Zone: %i" % ( mode_info["mode"],
                                 mode_info["zone"] )
 
-# Ready for user code to execute, send it useful info:
-while not os.path.exists( START_FIFO ):
-    time.sleep(0.1)
-
-print "Starting user code."
-with open( START_FIFO, "w" ) as f:
-    f.write( json.dumps( mode_info ) )
-    start_time = time.time()
+user.start( mode_info )
+start_time = time.time()
 
 if mode_info["mode"] == "comp":
     "Competition mode"
-    end_match( start_time, robot )
+    real_sleep( start_time, MATCH_DURATION )
+    user.end_match()
 
-r = robot.wait()
-print "Robot code exited with code %i" % r
+user.wait()
