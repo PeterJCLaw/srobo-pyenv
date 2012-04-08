@@ -1,4 +1,17 @@
-import os
+import os, sys
+import addcr
+
+def init( fname, log_dir ):
+    "Initialise and use a new log file"
+
+    if os.path.exists( fname ):
+        "Move the old log file to log.txt.N"
+        move_old_logfile( fname,
+                          old_log_dir = os.path.join( log_dir, "old-logs" ) )
+
+    #Put stdout and stderr into the log file
+    sys.stderr = sys.stdout = addcr.AddCRWriter(open( fname, "at", 1))
+
 
 def move_old_logfile( log_fname, old_log_dir ):
     "Move an old log file to the right place"

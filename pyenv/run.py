@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import optparse, sys, os, os.path, time, shutil
 import sricd, json, fw, log, squidge, usercode
-import addcr
 import subprocess
 from subprocess import Popen, call
 
@@ -32,15 +31,9 @@ USER_EXEC = os.path.join( USER_DIR, "robot.py" )
 VAR_DIR = os.path.join( PROG_DIR, "var")
 
 if not args.debug:
-    if os.path.exists( LOG_FNAME ):
-        "Move old log file to log.txt.N"
-        log.move_old_logfile( LOG_FNAME,
-                              old_log_dir = os.path.join( LOG_DIR, "old-logs" ) )
-
-    "Put stdout and stderr into log file"
-    sys.stderr = sys.stdout = addcr.AddCRWriter(open( LOG_FNAME, "at", 1))
+    log.init( LOG_FNAME, LOG_DIR )
 else:
-    "Ensure that the logfile exists, as some things need it"
+    "Debug mode: ensure that the logfile exists, as some things need it"
     if not os.path.exists( LOG_FNAME ):
         open( LOG_FNAME, "w" ).close()
 
