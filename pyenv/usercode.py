@@ -36,7 +36,6 @@ class UserCode(object):
         #### Now kill the motor rail
 
         # Augment the import path so we can get to the Power class
-        sys.path.append( PYLIB_DIR )
         import sr.tssric, sr.power, sr.pysric
 
         sricman = sr.tssric.SricCtxMan()

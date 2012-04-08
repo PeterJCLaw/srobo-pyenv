@@ -84,6 +84,9 @@ class RobotRunner(object):
         # Prefix PATH with our bin directory
         os.environ["PATH"] =  "%s:%s" % ( self.config.bin_dir, os.environ["PATH"] )
 
+        # Extend our import path to include pylib
+        sys.path.append( self.config.pylib_dir )
+
     def init_fs(self):
         "Initialise/reset the filesystem"
 
