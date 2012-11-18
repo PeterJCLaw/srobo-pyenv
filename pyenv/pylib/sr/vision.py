@@ -1,8 +1,8 @@
-import pykoki, threading, time, functools
+import pykoki, threading, time, functools, re, subprocess
 from collections import namedtuple
 from pykoki import CameraParams, Point2Df, Point2Di
 
-camera_focal_length = {
+C500_focal_length = {
     (160, 120): (135.2539065, 135.2539065),
     (176, 144): (148.242188, 148.242188),
     (320, 240): (266.992187667, 266.992187667),
@@ -15,6 +15,31 @@ camera_focal_length = {
     (1280, 720): (1087.10937467, 1087.10937467),
     (1280, 800): (1085.87239567, 1085.87239567),
     (1280, 1024): (1087.10937467, 1087.10937467)
+}
+
+C270_focal_length = {
+    (1280, 960): (1402.4129693403379, 1402.4129693403379),
+    (1280, 720): (1403.6700720661784, 1403.6700720661784),
+    (1024, 576): (1124.3241302755343, 1124.3241302755343),
+    (960, 720):  (1051.3506745692532, 1051.3506745692532),
+    (960, 544):  (1050.6160916576887, 1050.6160916576887),
+    (864, 480):  (940.64475443969184, 940.64475443969184),
+    (800, 600):  (870.49134233524376, 870.49134233524376),
+    (800, 448):  (870.24502453110301, 870.24502453110301),
+    (752, 416):  (813.03563104383659, 813.03563104383659),
+    (640, 480):  (793.97214065079106, 793.97214065079106),
+    (544, 288):  (593.33938236047481, 593.33938236047481),
+    (432, 240):  (473.402174937062,   473.402174937062),
+    (352, 288):  (416.51679809127182, 416.51679809127182),
+    (320, 240):  (396.10516141661941, 396.10516141661941),
+    (320, 176):  (339.97100058087398, 339.97100058087398),
+    (176, 144):  (204.85920172232522, 204.85920172232522),
+    (160, 120):  (195.20341230615605, 195.20341230615605)
+}
+
+focal_length_lut = {
+    (0x046d, 0x0807): C500_focal_length,
+    (0x046d, 0x0825): C270_focal_length
 }
 
 MARKER_ARENA, MARKER_ROBOT, MARKER_TOKEN, \
@@ -83,6 +108,8 @@ class Vision(object):
         self.koki = pykoki.PyKoki(lib)
         self._camdev = camdev
         self.fd = self.koki.v4l_open_cam(self._camdev)
+        self.camera_focal_length = None
+        self._init_focal_length()
 
         if self.fd < 0:
             raise Exception("Couldn't open camera: %s" % ctypes.get_errno() )
@@ -103,6 +130,17 @@ class Vision(object):
     def __del__(self):
         self._stop()
         self.koki.v4l_close_cam(self.fd)
+
+    def _init_focal_length(self):
+        vendor_product_re = re.compile(".* ([0-9A-Za-z]+):([0-9A-Za-z]+) ")
+        p = subprocess.Popen(["lsusb"], stdout=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        for line in stdout.splitlines():
+            match = vendor_product_re.match(line)
+            id = tuple(int(x, 16) for x in match.groups())
+            if id in focal_length_lut:
+               self.camera_focal_length = focal_length_lut[id]
+               return
 
     def _set_res(self, res):
         "Set the resolution of the camera if different to what we were"
@@ -172,7 +210,7 @@ class Vision(object):
 
         params = CameraParams( Point2Df( self._res[0]/2,
                                          self._res[1]/2 ),
-                               Point2Df( *camera_focal_length[ self._res ] ),
+                               Point2Df( *self.camera_focal_length[ self._res ] ),
                                Point2Di( *self._res ) )
 
         with timer:
