@@ -18,7 +18,7 @@ class VisionTest(unittest.TestCase):
 
     def test_res(self):
         "Check that we can set the resolution"
-        for res in sr.vision.camera_focal_length.keys():
+        for res in self.R.vision.camera_focal_length.keys():
             markers = self.R.see( res = res )
 
             self.assertTrue( isinstance( markers, list ) )
