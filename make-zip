@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, tempfile, subprocess, shutil, re
+import os, sys, tempfile, subprocess, shutil, re, argparse
 
 def find_pyenv_rev( reporoot ):
     "Return the revision of pyenv"
@@ -64,11 +64,19 @@ def strip_binaries( tmpd ):
                 "It's an ELF file"
                 strip_binary(fpath)
 
-if len(sys.argv) != 3:
-    print >>sys.stderr, "Usage: make-zip USER_CODE_DIR OUTPUT_ZIP"
-    exit(1)
+parser = argparse.ArgumentParser(description='Pack a robot.zip from user code.')
+parser.add_argument('usercode',
+                    help='user code source directory, containing a robot.py')
+parser.add_argument('output',
+                    help='output zip file')
+parser.add_argument('--no-strip',
+                    dest='suppress_strip',
+                    action='store_true',
+                    help='suppress binary stripping behaviour')
 
-USER_CODE_DIR, OUTPUT_ZIP = sys.argv[1:]
+args = parser.parse_args()
+
+USER_CODE_DIR, OUTPUT_ZIP = args.usercode, args.output
 
 if not os.path.isdir( USER_CODE_DIR ):
     print >>sys.stderr, "Error: Supplied user directory path is not a directory."
@@ -86,7 +94,8 @@ assert subprocess.call( "cp -r %s/* %s" % (PYENV_DIR, tmpd),
 
 add_pyenv_rev_file( REPO_ROOT, tmpd )
 remove_gunk( tmpd )
-strip_binaries( tmpd )
+if not args.suppress_strip:
+    strip_binaries( tmpd )
 
 # Copy in the user's code
 subprocess.check_call( ["cp", "-r", USER_CODE_DIR, os.path.join( tmpd, "user" )] )
