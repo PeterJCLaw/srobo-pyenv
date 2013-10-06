@@ -1,6 +1,8 @@
 import serial
 import time
 
+SERIAL_BAUD = 115200
+
 # Magic time!
 # We do this so that values print nicely, but can also be used in
 # the obvious ways
@@ -37,31 +39,31 @@ INPUT_PULLUP = "INPUT_PULLUP"
 
 class Ruggeduino(object):
     def __init__(self, path):
-        self.path = path
-        self.socket = None
-        self.baud = 9600
-
-    def open(self):
-        self.socket = serial.Serial(self.path, self.baud)
-        # Unfortunately, pin waggling occurs which means the
-        # Ruggeduino is reset when we open the connection. Right now
-        # the simplest work-around is to delay briefly.
-        time.sleep(0.8)
+        self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
+        self._is_srduino()
 
     def close(self):
-        self.socket.close()
-        self.socket = None
+        self.serial.close()
 
-    def _open_on_demand(self):
-        if self.socket is None:
-            self.open()
+    def command(self, data, expected_len = 0):
+        res = bytes()
+        attempts = 20
+        while len(res) != expected_len:
+            if len(res) == 0:
+                # Not received anything yet, retry the command
+                self.serial.write(bytes(data))
+            res += self.serial.read(expected_len - len(res))
+            attempts -= 1
+            if attempts == 0:
+                raise Exception("Communications with Ruggeduino failed")
+        return res
 
-    def command(self, data, response = 0):
-        self._open_on_demand()
-        time.sleep(0.005) # Don't spam the Ruggeduino too much
-        self.socket.write(bytes(data))
-        self.socket.flush()
-        return self.socket.read(response)
+    def _is_srduino(self):
+        response = self.command('a', expected_len=1)
+        if response == "a":
+            return True
+        else:
+            return False
 
     def _encode_pin(self, pin):
         return chr(ord('a') + pin)
@@ -73,7 +75,7 @@ class Ruggeduino(object):
         self.command(MODES[mode] + self._encode_pin(pin))
 
     def digital_read(self, pin):
-        response = self.command('r' + self._encode_pin(pin), response = 1)
+        response = self.command('r' + self._encode_pin(pin), expected_len = 1)
         return HIGH if response[0] == 'h' else LOW
 
     def digital_write(self, pin, level):
