@@ -40,27 +40,23 @@ INPUT_PULLUP = "INPUT_PULLUP"
 class Ruggeduino(object):
     def __init__(self, path):
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
-        self._is_srduino()
+        if not self._is_srduino():
+            print "Warning: Ruggeduino is not running the SR firmware"
 
     def close(self):
         self.serial.close()
 
-    def command(self, data, expected_len = 0):
-        res = bytes()
-        attempts = 20
-        while len(res) != expected_len:
-            if len(res) == 0:
-                # Not received anything yet, retry the command
-                self.serial.write(bytes(data))
-            res += self.serial.read(expected_len - len(res))
-            attempts -= 1
-            if attempts == 0:
-                raise Exception("Communications with Ruggeduino failed")
-        return res
+    def command(self, data):
+        for i in range(10):
+            self.serial.write(bytes(data))
+            res = self.serial.readline()
+            if len(res) > 0 and res[-1] == "\n":
+                return res
+        raise Exception("Communications with Ruggeduino failed")
 
     def _is_srduino(self):
-        response = self.command('a', expected_len=1)
-        if response == "a":
+        response = self.command('v')
+        if response.split(":")[0] == "SRduino":
             return True
         else:
             return False
@@ -75,10 +71,13 @@ class Ruggeduino(object):
         self.command(MODES[mode] + self._encode_pin(pin))
 
     def digital_read(self, pin):
-        response = self.command('r' + self._encode_pin(pin), expected_len = 1)
+        response = self.command('r' + self._encode_pin(pin))
         return HIGH if response[0] == 'h' else LOW
 
     def digital_write(self, pin, level):
         self.command(('h' if level == HIGH else 'l') +
                       self._encode_pin(pin))
 
+    def analogue_read(self, pin):
+        response = self.command('a' + self._encode_pin(pin))
+        return (int(response)/1023.0)*5.0
