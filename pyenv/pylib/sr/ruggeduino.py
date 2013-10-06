@@ -1,36 +1,6 @@
 import serial
-import time
 
 SERIAL_BAUD = 115200
-
-# Magic time!
-# We do this so that values print nicely, but can also be used in
-# the obvious ways
-class LogicLevel(object):
-    def __init__(self, name, interpretation):
-        self.name = name
-        self.interpretation = interpretation
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
-
-    def __nonzero__(self):
-        return interpretation
-
-    def __eq__(self, x):
-        if isinstance(x, LogicLevel):
-            return x.interpretation == self.interpretation
-        else:
-            return x == self.interpretation
-
-    def __ne__(self, x):
-        return not self.__eq__(x)
-
-HIGH = LogicLevel("HIGH", True)
-LOW = LogicLevel("LOW", False)
 
 # Strings here so that they print nicely
 INPUT = "INPUT"
@@ -72,11 +42,10 @@ class Ruggeduino(object):
 
     def digital_read(self, pin):
         response = self.command('r' + self._encode_pin(pin))
-        return HIGH if response[0] == 'h' else LOW
+        return True if response[0] == 'h' else False
 
     def digital_write(self, pin, level):
-        self.command(('h' if level == HIGH else 'l') +
-                      self._encode_pin(pin))
+        self.command(('h' if level else 'l') + self._encode_pin(pin))
 
     def analogue_read(self, pin):
         response = self.command('a' + self._encode_pin(pin))
