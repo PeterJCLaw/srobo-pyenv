@@ -21,8 +21,9 @@ class Motor(object):
 
         with self.lock:
             self.serial.write(CMD_RESET)
-            if not self._is_mcv4b():
-                print "Warning: Motor board is not running the expected firmware"
+
+        if not self._is_mcv4b():
+            print "Warning: Motor board is not running the expected firmware"
 
         self.m0 = MotorChannel(self.serial, self.lock, 0)
         self.m1 = MotorChannel(self.serial, self.lock, 1)
