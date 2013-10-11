@@ -110,8 +110,8 @@ class Robot(object):
                        y["ID_SERIAL_SHORT"])
 
         udev = pyudev.Context()
-        motor_devs = udev.list_devices( subsystem = "tty",
-                                        ID_MODEL = "MCV4B" )
+        motor_devs = list(udev.list_devices( subsystem = "tty",
+                                             ID_MODEL = "MCV4B" ))
         # Sort by serial number
         motor_devs.sort( cmp = motor_cmp_serial )
 
@@ -124,7 +124,7 @@ class Robot(object):
 
         n = 0
         for dev in motor_devs:
-            m = motor.Motor( d.device_node )
+            m = motor.Motor( dev.device_node )
 
             self.motors[n] = m
             self.motors[ dev["ID_SERIAL_SHORT"] ] = m
