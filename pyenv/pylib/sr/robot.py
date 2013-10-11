@@ -2,6 +2,7 @@
 import json, sys, optparse, time, os, glob
 import pysric, tssric
 import motor, power, servo, jointio, vision
+import pyudev
 
 class NoCameraPresent(Exception):
     "Camera not connected."
@@ -82,8 +83,7 @@ class Robot(object):
     def _init_devs(self):
         "Initialise the attributes for accessing devices"
 
-        mapping = { pysric.SRIC_CLASS_MOTOR: ( "motors", motor.Motor ),
-                    pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ),
+        mapping = { pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ),
                     pysric.SRIC_CLASS_JOINTIO: ( "io", jointio.JointIO ) }
 
         for devtype, info in mapping.iteritems():
@@ -99,6 +99,35 @@ class Robot(object):
         if pysric.SRIC_CLASS_POWER not in self.sricman.devices:
             raise Exception( "Power board not enumerated -- aborting." )
         self.power = power.Power( self.sricman.devices[pysric.SRIC_CLASS_POWER][0] )
+
+        # Motor boards
+        self._init_motors()
+
+    def _init_motors(self):
+        def motor_cmp_serial(x,y):
+            "Compare the serial numbers of two motor boards"
+            return cmp(x["ID_SERIAL_SHORT"],
+                       y["ID_SERIAL_SHORT"])
+
+        udev = pyudev.Context()
+        motor_devs = udev.list_devices( subsystem = "tty",
+                                        ID_MODEL = "MCV4B" )
+        # Sort by serial number
+        motor_devs.sort( cmp = motor_cmp_serial )
+
+        # Motors stored in a dictionary
+        # Each motor appears twice in this dictionary:
+        #  1. Under its serial number
+        #  2. Under an integer key.  Integers assigned by ordering
+        #     boards by serial number.
+        self.motors = {}
+
+        n = 0
+        for dev in motor_devs:
+            m = motor.Motor( d.device_node )
+
+            self.motors[n] = m
+            self.motors[ dev["ID_SERIAL_SHORT"] ] = m
 
     def _init_vision(self, camdev):
         if not os.path.exists(camdev):
