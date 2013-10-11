@@ -1,33 +1,75 @@
-# Interface to motor controllers
-import pysric, types
+import threading
+import serial
+import math
 
-# Motor controller SRIC commands
-CMD_MOTOR_SET = 0
-CMD_MOTOR_GET = 1
+SERIAL_BAUD = 1000000
+
+CMD_RESET = chr(0)
+CMD_VERSION = chr(1)
+CMD_SPEED0 = chr(2)
+CMD_SPEED1 = chr(3)
 
 # The maximum value that the motor board will accept
 PWM_MAX = 100
 
 class Motor(object):
     "A motor"
-    def __init__(self, dev):
-        self.dev = dev
-        # Private shadow of use_brake
-        self._use_brake = True
+    def __init__(self, path):
+        self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
+        self.lock = threading.Lock()
+
+        with self.lock:
+            self.serial.write(CMD_RESET)
+
+        if not self._is_mcv4b():
+            print "Warning: Motor board is not running the expected firmware"
+
+        self.output_controller = MotorOutputController(self.serial, self.lock)
+
+        self.m0 = MotorChannel(self.output_controller, 0)
+        self.m1 = MotorChannel(self.output_controller, 1)
+
+    def close(self):
+        self.serial.close()
+
+    def _is_mcv4b(self):
+        with self.lock:
+            self.serial.write(CMD_VERSION)
+            return self.serial.readline().split(":")[0] == "MCV4B"
+
+
+class MotorOutputController(object):
+    def __init__(self, serial, lock):
+        self.serial = serial
+        self.lock = lock
+        self.power = [0, 0]
+
+    def _encode_speed(self, speed):
+        return chr(int(speed) + 128)
+
+    def update(self):
+        power0 = self.power[0] if self.power[0] != 0 else 1
+        power1 = self.power[1] if self.power[1] != 0 else 1
+        with self.lock:
+            self.serial.write(CMD_SPEED0)
+            self.serial.write(self._encode_speed(math.copysign(power1,
+                                                               power0)))
+            self.serial.write(CMD_SPEED1)
+            self.serial.write(self._encode_speed(math.copysign(power0,
+                                                               power1)))
+
+
+class MotorChannel(object):
+    def __init__(self, output_controller, channel):
+        self.output_controller = output_controller
+        self.channel = channel
 
     @property
-    def target(self):
-        "Read the target from the motor controller"
-        r = self.dev.txrx( [ CMD_MOTOR_GET ] )
-        t = r[0]
+    def power(self):
+        return self.output_controller.power[self.channel]
 
-        if t & 0x80:
-            "Sign-extend if negative"
-            t = t | -256
-        return t
-
-    @target.setter
-    def target(self, value):
+    @power.setter
+    def power(self, value):
         "target setter function"
         value = int(value)
 
@@ -37,24 +79,8 @@ class Motor(object):
         elif value < -PWM_MAX:
             value = -PWM_MAX
 
-        brake = 0
-        if value == 0 and self.use_brake:
-            brake = 1
-
-        self.dev.txrx( [ CMD_MOTOR_SET, value, brake ] )
-
-    @property
-    def use_brake(self):
-        "Whether to use the brake when at 0 speed"
-        return self._use_brake
-
-    @use_brake.setter
-    def use_brake(self, value):
-        self._use_brake = value
-
-        if self.target == 0:
-            "Implement the new braking setting"
-            self.target = 0
+        self.output_controller.power[self.channel] = value
+        self.output_controller.update()
 
     def __del__(self):
-        self.target = 0
+        self.power = 0
