@@ -1,3 +1,4 @@
+import threading
 import serial
 
 SERIAL_BAUD = 115200
@@ -12,8 +13,13 @@ class Ruggeduino(object):
 
     def __init__(self, path):
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
+
+        # Lock that must be acquired for use of the serial device
+        self.lock = threading.Lock()
+
         if not self._is_srduino():
             print "Warning: Ruggeduino is not running the SR firmware"
+
 
     def close(self):
         self.serial.close()
@@ -22,6 +28,9 @@ class Ruggeduino(object):
         """Send a command to the Ruggeduino
 
         Returns the response from the device."""
+
+        # The lock must have been acquired to talk to the device
+        assert self.lock.locked()
 
         for i in range(10):
             self.serial.write(bytes(data))
@@ -32,12 +41,12 @@ class Ruggeduino(object):
 
     def _is_srduino(self):
         "Determine if the board is flashed with the SR firmware"
-
-        response = self.command('v')
-        if response.split(":")[0] == "SRduino":
-            return True
-        else:
-            return False
+        with self.lock:
+            response = self.command('v')
+            if response.split(":")[0] == "SRduino":
+                return True
+            else:
+                return False
 
     def _encode_pin(self, pin):
         "Encode a pin number in ascii"
@@ -48,18 +57,22 @@ class Ruggeduino(object):
         MODES = {INPUT: 'i',
                  OUTPUT: 'o',
                  INPUT_PULLUP: 'p'}
-        self.command(MODES[mode] + self._encode_pin(pin))
+        with self.lock:
+            self.command(MODES[mode] + self._encode_pin(pin))
 
     def digital_read(self, pin):
         "Read a digital input"
-        response = self.command('r' + self._encode_pin(pin))
-        return True if response[0] == 'h' else False
+        with self.lock:
+            response = self.command('r' + self._encode_pin(pin))
+            return True if response[0] == 'h' else False
 
     def digital_write(self, pin, level):
         "Write to an output"
-        self.command(('h' if level else 'l') + self._encode_pin(pin))
+        with self.lock:
+            self.command(('h' if level else 'l') + self._encode_pin(pin))
 
     def analogue_read(self, pin):
         "Read an analogue input"
-        response = self.command('a' + self._encode_pin(pin))
+        with self.lock:
+            response = self.command('a' + self._encode_pin(pin))
         return (int(response)/1023.0)*5.0
