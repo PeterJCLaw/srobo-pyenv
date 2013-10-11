@@ -1,3 +1,4 @@
+import threading
 import serial
 
 SERIAL_BAUD = 1000000
@@ -16,23 +17,28 @@ class Motor(object):
     "A motor"
     def __init__(self, path):
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
-        self.serial.write(CMD_RESET)
-        if not self._is_mcv4b():
-            print "Warning: Motor board is not running the expected firmware"
+        self.lock = threading.Lock()
 
-        self.m0 = MotorChannel(self.serial, 0)
-        self.m1 = MotorChannel(self.serial, 1)
+        with self.lock:
+            self.serial.write(CMD_RESET)
+            if not self._is_mcv4b():
+                print "Warning: Motor board is not running the expected firmware"
+
+        self.m0 = MotorChannel(self.serial, self.lock, 0)
+        self.m1 = MotorChannel(self.serial, self.lock, 1)
 
     def close(self):
         self.serial.close()
 
     def _is_mcv4b(self):
-        self.serial.write(CMD_VERSION)
-        return self.serial.readline().split(":")[0] == "MCV4B"
+        with self.lock:
+            self.serial.write(CMD_VERSION)
+            return self.serial.readline().split(":")[0] == "MCV4B"
 
 class MotorChannel(object):
-    def __init__(self, serial, channel):
+    def __init__(self, serial, lock, channel):
         self.serial = serial
+        self.lock = lock
         self.channel = channel
 
         # Private shadow of use_brake
@@ -60,15 +66,16 @@ class MotorChannel(object):
         elif value < -PWM_MAX:
             value = -PWM_MAX
 
-        if self.channel == 0:
-            self.serial.write(CMD_SPEED0)
-        else:
-            self.serial.write(CMD_SPEED1)
+        with self.lock:
+            if self.channel == 0:
+                self.serial.write(CMD_SPEED0)
+            else:
+                self.serial.write(CMD_SPEED1)
 
-        if value == 0 and self.use_brake:
-            self.serial.write(SPEED_BRAKE)
-        else:
-            self.serial.write(self._encode_speed(value))
+            if value == 0 and self.use_brake:
+                self.serial.write(SPEED_BRAKE)
+            else:
+                self.serial.write(self._encode_speed(value))
 
     @property
     def use_brake(self):
