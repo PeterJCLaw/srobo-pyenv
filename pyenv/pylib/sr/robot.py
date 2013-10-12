@@ -1,7 +1,7 @@
 # Copyright Robert Spanton 2011
 import json, sys, optparse, time, os, glob
 import pysric, tssric
-import motor, power, servo, jointio, vision
+import motor, power, servo, ruggeduino, vision
 import pyudev
 
 class NoCameraPresent(Exception):
@@ -83,8 +83,7 @@ class Robot(object):
     def _init_devs(self):
         "Initialise the attributes for accessing devices"
 
-        mapping = { pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ),
-                    pysric.SRIC_CLASS_JOINTIO: ( "io", jointio.JointIO ) }
+        mapping = { pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ) }
 
         for devtype, info in mapping.iteritems():
             attrname, cls = info
@@ -102,32 +101,42 @@ class Robot(object):
 
         # Motor boards
         self._init_motors()
+        self._init_ruggeduinos()
 
     def _init_motors(self):
-        def motor_cmp_serial(x,y):
-            "Compare the serial numbers of two motor boards"
+        self.motors = self._init_usb_devices("MCV4B", motor.Motor)
+
+    def _init_ruggeduinos(self):
+        self.ruggeduinos = self._init_usb_devices("Ruggeduino",
+                                                  ruggeduino.Ruggeduino)
+
+    def _init_usb_devices(self, model, ctor):
+        def _udev_compare_serial(x, y):
+            """Compare two udev serial numbers"""
             return cmp(x["ID_SERIAL_SHORT"],
                        y["ID_SERIAL_SHORT"])
 
         udev = pyudev.Context()
-        motor_devs = list(udev.list_devices( subsystem = "tty",
-                                             ID_MODEL = "MCV4B" ))
+        devs = list(udev.list_devices( subsystem = "tty",
+                                       ID_MODEL = model ))
         # Sort by serial number
-        motor_devs.sort( cmp = motor_cmp_serial )
+        devs.sort( cmp = _udev_compare_serial )
 
-        # Motors stored in a dictionary
-        # Each motor appears twice in this dictionary:
+        # Devices stored in a dictionary
+        # Each device appears twice in this dictionary:
         #  1. Under its serial number
         #  2. Under an integer key.  Integers assigned by ordering
         #     boards by serial number.
-        self.motors = {}
+        srdevs = {}
 
         n = 0
-        for dev in motor_devs:
-            m = motor.Motor( dev.device_node )
+        for dev in devs:
+            srdev = ctor( dev.device_node )
 
-            self.motors[n] = m
-            self.motors[ dev["ID_SERIAL_SHORT"] ] = m
+            srdevs[n] = srdev
+            srdevs[ dev["ID_SERIAL_SHORT"] ] = srdev
+
+        return srdevs
 
     def _init_vision(self, camdev):
         if not os.path.exists(camdev):
