@@ -135,6 +135,7 @@ class Robot(object):
 
             srdevs[n] = srdev
             srdevs[ dev["ID_SERIAL_SHORT"] ] = srdev
+            n += 1
 
         return srdevs
 
