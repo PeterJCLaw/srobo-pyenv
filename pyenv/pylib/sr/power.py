@@ -100,9 +100,10 @@ class Power:
             "It's just a single note"
             beeps = [(freq, dur)]
 
-        if len(beeps) > 10:
+        MAX_BEEPS = 10
+        if len(beeps) > MAX_BEEPS:
             # TODO: Do something better here
-            raise "Too many beeps added"
+            raise Exception("Can not queue more than {0} beeps at a time.".format(MAX_BEEPS))
 
         tx = [ CMD_PLAY_PIEZO, len(beeps) ]
         for f,d  in beeps:
