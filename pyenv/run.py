@@ -112,7 +112,8 @@ class RobotRunner(object):
                          "/var/volatile/run/ld.so.cache" )
 
         # Remove files we don't want to be around
-        for fname in [ self.config.robot_running ]:
+        for fname in [ self.config.robot_running,
+                       "/tmp/robot-object-lock" ]:
             if os.path.exists( fname ):
                 os.unlink( fname )
 

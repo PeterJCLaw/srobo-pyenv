@@ -12,6 +12,7 @@ class NoCameraPresent(Exception):
 
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
+    SYSLOCK_PATH = "/tmp/robot-object-lock"
 
     def __init__( self,
                   wait_start = True,
@@ -19,6 +20,7 @@ class Robot(object):
                   camera_dev = "/dev/video0",
                   quiet = False ):
         self._quiet = quiet
+        self._acquire_syslock()
         self.sricman = tssric.SricCtxMan()
 
         if not self._quiet:
@@ -34,6 +36,14 @@ class Robot(object):
         else:
             self.mode = "dev"
             self.zone = 0
+
+    def _acquire_syslock(self):
+        try:
+            # Create the file
+            self._syslock = os.open( self.SYSLOCK_PATH,
+                                     os.O_CREAT | os.O_EXCL )
+        except OSError:
+            raise Exception( "Robot lock could not be acquired. Have you created more than one Robot() object?" )
 
     def _dump_bus(self):
         "Write the contents of the SRIC bus out to stdout"
