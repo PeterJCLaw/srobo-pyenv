@@ -15,17 +15,18 @@ def add_pyenv_rev_file( reporoot, tmpd ):
     f.write( "%s\n" % find_pyenv_rev(reporoot) )
     f.close()
 
-def remove_gunk( tmpd ):
-    "Remove unnecessary files"
-    rem = [ ".gitignore", "*.pyc", "*~", "#*#", "log.txt*" ]
-    r = " -o ".join( [ "-name '%s' -print0 " % x for x in rem ] )
-
-    assert subprocess.call( "find . %s | xargs -0 rm -f" % r, cwd = tmpd, shell = True ) == 0
-
-    # Remove any trace of a user directory
+def remove_user_dir( tmpd ):
+    "Remove any trace of a user directory"
     udir = os.path.join( tmpd, "user" )
     if os.path.exists( udir ):
         shutil.rmtree( udir )
+
+def remove_gunk( tmpd ):
+    "Remove unnecessary files"
+    rem = [ ".gitignore", "*.pyc", "*~", "#*#", "log.txt*", ".*.swp", "*.save" ]
+    r = " -o ".join( [ "-name '%s' -print0 " % x for x in rem ] )
+
+    assert subprocess.call( "find . %s | xargs -0 rm -f" % r, cwd = tmpd, shell = True ) == 0
 
 def get_elf_mach( elfname ):
     "Return the machine that the given ELF is for"
@@ -73,6 +74,9 @@ parser.add_argument('--no-strip',
                     dest='suppress_strip',
                     action='store_true',
                     help='suppress binary stripping behaviour')
+parser.add_argument("--remove-gunk", "-r",
+                    action="store_true",
+                    help="Remove 'gunk' files from user code (e.g. editor backup files)")
 
 args = parser.parse_args()
 
@@ -93,12 +97,21 @@ assert subprocess.call( "cp -r %s/* %s" % (PYENV_DIR, tmpd),
                         shell = True ) == 0
 
 add_pyenv_rev_file( REPO_ROOT, tmpd )
-remove_gunk( tmpd )
+
+if not args.remove_gunk:
+    "Remove gunk before the user files are put in"
+    remove_gunk( tmpd )
+remove_user_dir( tmpd )
+
 if not args.suppress_strip:
     strip_binaries( tmpd )
 
 # Copy in the user's code
 subprocess.check_call( ["cp", "-r", USER_CODE_DIR, os.path.join( tmpd, "user" )] )
+
+if args.remove_gunk:
+    "Remove gunk from the user directory as well"
+    remove_gunk( tmpd )
 
 # Temporary directory for the zipfile to reside in
 ziptmpd = tempfile.mkdtemp( suffix="-pyenv" )
