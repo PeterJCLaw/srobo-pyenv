@@ -15,28 +15,30 @@ class Robot(object):
     SYSLOCK_PATH = "/tmp/robot-object-lock"
 
     def __init__( self,
-                  wait_start = True,
-                  init_vision = True,
-                  camera_dev = "/dev/video0",
-                  quiet = False ):
+                  quiet = False,
+                  init = True ):
         self._quiet = quiet
         self._acquire_syslock()
+        self._parse_cmdline()
+
+        if init:
+            self.init()
+            self.wait_start()
+
+    @classmethod
+    def setup(cls, quiet = False ):
+        return cls( init = False,
+                    quiet = quiet )
+
+    def init(self):
+        "Find and initialise hardware"
+
         self.sricman = tssric.SricCtxMan()
-
         self._init_devs()
-
-        if init_vision:
-            self._init_vision(camera_dev)
+        self._init_vision()
 
         if not self._quiet:
             self._dump_devs()
-
-        self._parse_cmdline()
-        if wait_start:
-            self._wait_start()
-        else:
-            self.mode = "dev"
-            self.zone = 0
 
     def _acquire_syslock(self):
         try:
@@ -103,7 +105,7 @@ class Robot(object):
         self.usbkey = options.usbkey
         self.startfifo = options.startfifo
 
-    def _wait_start(self):
+    def wait_start(self):
         "Wait for the start signal to happen"
 
         os.mkfifo( self.startfifo )
@@ -186,7 +188,7 @@ class Robot(object):
 
         return srdevs
 
-    def _init_vision(self, camdev):
+    def _init_vision(self, camdev = "/dev/video0"):
         if not os.path.exists(camdev):
             "Camera isn't connected."
             return
