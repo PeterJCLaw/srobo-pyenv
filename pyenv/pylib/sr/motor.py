@@ -33,10 +33,25 @@ class Motor(object):
         self.serial.close()
 
     def _is_mcv4b(self):
-        with self.lock:
-            self.serial.write(CMD_VERSION)
-            return self.serial.readline().split(":")[0] == "MCV4B"
+        fw = None
 
+        for x in range(10):
+            # We make repeat attempts at reading the firmware version
+            # because the motor controller may have only just been powered-up.
+
+            with self.lock:
+                self.serial.write(CMD_VERSION)
+                r = self.serial.readline()
+
+            if len(r) > 0 and r[-1] == "\n":
+                "Successfully read the firmware version"
+                fw = r
+                break
+
+        if fw is None:
+            raise Exception( "Failed to read firmware version from motor controller" )
+
+        return fw == "MCV4B:1\n"
 
 class MotorOutputController(object):
     def __init__(self, serial, lock):
