@@ -14,7 +14,8 @@ PWM_MAX = 100
 
 class Motor(object):
     "A motor"
-    def __init__(self, path):
+    def __init__(self, path, serialnum = None):
+        self.serialnum = serialnum
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
         self.lock = threading.Lock()
 
@@ -52,6 +53,9 @@ class Motor(object):
             raise Exception( "Failed to read firmware version from motor controller" )
 
         return fw == "MCV4B:1\n"
+
+    def __repr__(self):
+        return "Motor( serialnum = \"{0}\" )".format( self.serialnum )
 
 class MotorOutputController(object):
     def __init__(self, serial, lock):

@@ -23,12 +23,13 @@ class Robot(object):
         self._acquire_syslock()
         self.sricman = tssric.SricCtxMan()
 
-        if not self._quiet:
-            self._dump_bus()
         self._init_devs()
 
         if init_vision:
             self._init_vision(camera_dev)
+
+        if not self._quiet:
+            self._dump_devs()
 
         self._parse_cmdline()
         if wait_start:
@@ -45,15 +46,48 @@ class Robot(object):
         except OSError:
             raise Exception( "Robot lock could not be acquired. Have you created more than one Robot() object?" )
 
-    def _dump_bus(self):
-        "Write the contents of the SRIC bus out to stdout"
+    def _dump_devs(self):
+        "Write a list of relevant devices out to stdout"
         print "Found the following devices:"
+
+        self._dump_sric_bus()
+        self._dump_usbdev_dict( self.motors, "Motors" )
+        self._dump_usbdev_dict( self.ruggeduinos, "Ruggeduinos" )
+        self._dump_webcam()
+
+    def _dump_sric_bus(self):
+        "Write the contents of the SRIC bus out to stdout"
         ps = self.sricman.get()
         for devclass in ps.devices:
             if devclass in [ pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR,
                              pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO ]:
                 for dev in ps.devices[devclass]:
-                    print dev
+                    print " -", dev
+
+    def _dump_webcam(self):
+        "Write information about the webcam to stdout"
+
+        if not hasattr(self, "vision"):
+            "No webcam"
+            return
+
+        # For now, just display the fact we have a webcam
+        print " - Webcam"
+
+    def _dump_usbdev_dict(self, devdict, name ):
+        "Write the contents of a device dict to stdout"
+
+        if len(devdict) == 0:
+            return
+
+        print " - {0}:".format( name )
+
+        for key, motor in devdict.iteritems():
+            if not isinstance( key, int ):
+                continue
+
+            print "    {index}: {motor}".format( index = key,
+                                                 motor = motor )
 
     def _parse_cmdline(self):
         "Parse the command line arguments"
@@ -141,10 +175,13 @@ class Robot(object):
 
         n = 0
         for dev in devs:
-            srdev = ctor( dev.device_node )
+            serialnum = dev["ID_SERIAL_SHORT"]
+
+            srdev = ctor( dev.device_node,
+                          serialnum = serialnum )
 
             srdevs[n] = srdev
-            srdevs[ dev["ID_SERIAL_SHORT"] ] = srdev
+            srdevs[ serialnum ] = srdev
             n += 1
 
         return srdevs

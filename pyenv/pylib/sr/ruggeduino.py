@@ -11,7 +11,8 @@ INPUT_PULLUP = "INPUT_PULLUP"
 class Ruggeduino(object):
     """Class for talking to a Ruggeduino flashed with the SR firmware"""
 
-    def __init__(self, path):
+    def __init__(self, path, serialnum = None):
+        self.serialnum = serialnum
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
 
         # Lock that must be acquired for use of the serial device
@@ -76,3 +77,6 @@ class Ruggeduino(object):
         with self.lock:
             response = self.command('a' + self._encode_pin(pin))
         return (int(response)/1023.0)*5.0
+
+    def __repr__(self):
+        return "Ruggeduino( serialnum = \"{0}\" )".format( self.serialnum )
