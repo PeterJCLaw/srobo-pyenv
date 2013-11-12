@@ -8,19 +8,21 @@ INPUT = "INPUT"
 OUTPUT = "OUTPUT"
 INPUT_PULLUP = "INPUT_PULLUP"
 
-class Ruggeduino(object):
-    """Class for talking to a Ruggeduino flashed with the SR firmware"""
-
-    def __init__(self, path, serialnum = None):
+class IgnoredRuggeduino(object):
+    def __init__(self, path, serialnum):
+        self.path = path
         self.serialnum = serialnum
+
+    def __repr__(self):
+        return "IgnoredRuggeduino( serialnum = \"{0}\" )".format( self.serialnum )
+
+class RuggeduinoCmdBase(object):
+    """Base class for talking to a Ruggeduino that supports the SR command protocol"""
+    def __init__(self, path):
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
 
         # Lock that must be acquired for use of the serial device
         self.lock = threading.Lock()
-
-        if not self._is_srduino():
-            print "Warning: Ruggeduino is not running the SR firmware"
-
 
     def close(self):
         self.serial.close()
@@ -40,14 +42,29 @@ class Ruggeduino(object):
                 return res
         raise Exception("Communications with Ruggeduino failed")
 
+    def firmware_version_read(self):
+        "Read the firmware version from the device"
+
+        with self.lock:
+            return self.command('v')
+
+class Ruggeduino(RuggeduinoCmdBase):
+    """Class for talking to a Ruggeduino flashed with the SR firmware"""
+    def __init__(self, path, serialnum = None):
+        RuggeduinoCmdBase.__init__(self, path)
+        self.serialnum = serialnum
+
+        if not self._is_srduino():
+            print "Warning: Ruggeduino is not running the SR firmware"
+
     def _is_srduino(self):
         "Determine if the board is flashed with the SR firmware"
-        with self.lock:
-            response = self.command('v')
-            if response.split(":")[0] == "SRduino":
-                return True
-            else:
-                return False
+        v = self.firmware_version_read()
+
+        if v.split(":")[0] == "SRduino":
+            return True
+        else:
+            return False
 
     def _encode_pin(self, pin):
         "Encode a pin number in ascii"
