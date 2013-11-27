@@ -15,28 +15,33 @@ class Robot(object):
     SYSLOCK_PATH = "/tmp/robot-object-lock"
 
     def __init__( self,
-                  wait_start = True,
-                  init_vision = True,
-                  camera_dev = "/dev/video0",
-                  quiet = False ):
+                  quiet = False,
+                  init = True ):
         self._quiet = quiet
         self._acquire_syslock()
+        self._parse_cmdline()
+
+        self._ruggeduino_id_handlers = {}
+        self._ruggeduino_fwver_handlers = { "SRduino": ruggeduino.Ruggeduino }
+
+        if init:
+            self.init()
+            self.wait_start()
+
+    @classmethod
+    def setup(cls, quiet = False ):
+        return cls( init = False,
+                    quiet = quiet )
+
+    def init(self):
+        "Find and initialise hardware"
+        print "Initialising hardware."
         self.sricman = tssric.SricCtxMan()
-
         self._init_devs()
-
-        if init_vision:
-            self._init_vision(camera_dev)
+        self._init_vision()
 
         if not self._quiet:
             self._dump_devs()
-
-        self._parse_cmdline()
-        if wait_start:
-            self._wait_start()
-        else:
-            self.mode = "dev"
-            self.zone = 0
 
     def _acquire_syslock(self):
         try:
@@ -103,8 +108,9 @@ class Robot(object):
         self.usbkey = options.usbkey
         self.startfifo = options.startfifo
 
-    def _wait_start(self):
+    def wait_start(self):
         "Wait for the start signal to happen"
+        print "Waiting for start signal."
 
         os.mkfifo( self.startfifo )
         f = open( self.startfifo, "r" )
@@ -124,9 +130,18 @@ class Robot(object):
         if self.zone < 0 or self.zone > 3:
             raise Exception( "zone must be in range 0-3 inclusive -- value of %i is invalid" % self.zone )
 
+    def ruggeduino_set_handler_by_id( self, r_id, handler ):
+        self._ruggeduino_id_handlers[ r_id ] = handler
+
+    def ruggeduino_set_handler_by_fwver( self, fwver, handler ):
+        self._ruggeduino_fwver_handlers[ fwver ] = handler
+
+    def ruggeduino_ignore_id( self, r_id ):
+        "Ignore the Ruggeduino with the given ID"
+        self.ruggeduino_set_handler_by_id( r_id, ruggeduino.IgnoredRuggeduino )
+
     def _init_devs(self):
         "Initialise the attributes for accessing devices"
-
         mapping = { pysric.SRIC_CLASS_SERVO: ( "servos", servo.Servo ) }
 
         for devtype, info in mapping.iteritems():
@@ -151,10 +166,34 @@ class Robot(object):
         self.motors = self._init_usb_devices("MCV4B", motor.Motor)
 
     def _init_ruggeduinos(self):
-        self.ruggeduinos = self._init_usb_devices("Ruggeduino",
-                                                  ruggeduino.Ruggeduino)
+        self.ruggeduinos = {}
 
-    def _init_usb_devices(self, model, ctor):
+        for n, dev in enumerate( self._list_usb_devices( "Ruggeduino" ) ):
+            handler = None
+
+            snum = dev["ID_SERIAL_SHORT"]
+            if snum in self._ruggeduino_id_handlers:
+                handler = self._ruggeduino_id_handlers[snum]
+
+            else:
+                # There's no ID-specific handler, so we can query it for
+                # its firmware version.
+                r = ruggeduino.RuggeduinoCmdBase( dev.device_node )
+                ver = r.firmware_version_read()
+                genre = ver.split(":")[0]
+
+                if genre in self._ruggeduino_fwver_handlers:
+                    handler = self._ruggeduino_fwver_handlers[genre]
+
+            if handler is None:
+                raise Exception( "No handler found for ruggeduino: serial {0}, firmware '{1}'".format( snum, genre ) )
+
+            srdev = handler( dev.device_node, snum )
+            self.ruggeduinos[n] = srdev
+            self.ruggeduinos[snum] = srdev
+
+    def _list_usb_devices(self, model):
+        "Create a sorted list of USB devices of the given type"
         def _udev_compare_serial(x, y):
             """Compare two udev serial numbers"""
             return cmp(x["ID_SERIAL_SHORT"],
@@ -165,6 +204,10 @@ class Robot(object):
                                        ID_MODEL = model ))
         # Sort by serial number
         devs.sort( cmp = _udev_compare_serial )
+        return devs
+
+    def _init_usb_devices(self, model, ctor):
+        devs = self._list_usb_devices( model )
 
         # Devices stored in a dictionary
         # Each device appears twice in this dictionary:
@@ -186,7 +229,7 @@ class Robot(object):
 
         return srdevs
 
-    def _init_vision(self, camdev):
+    def _init_vision(self, camdev = "/dev/video0"):
         if not os.path.exists(camdev):
             "Camera isn't connected."
             return
