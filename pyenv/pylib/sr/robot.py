@@ -186,7 +186,7 @@ class Robot(object):
                     handler = self._ruggeduino_fwver_handlers[genre]
 
             if handler is None:
-                raise Exception( "No handler found for ruggeduino with serial {0}".format( snum ) )
+                raise Exception( "No handler found for ruggeduino: serial {0}, firmware '{1}'".format( snum, genre ) )
 
             srdev = handler( dev.device_node, snum )
             self.ruggeduinos[n] = srdev
