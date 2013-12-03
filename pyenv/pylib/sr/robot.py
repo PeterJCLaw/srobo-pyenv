@@ -10,6 +10,11 @@ class NoCameraPresent(Exception):
     def __str__(self):
         return "No camera found."
 
+class AlreadyInitialised(Exception):
+    "The robot has been initialised twice"
+    def __str__(self):
+        return "Robot object can only be initialised once."
+
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
     SYSLOCK_PATH = "/tmp/robot-object-lock"
@@ -17,6 +22,7 @@ class Robot(object):
     def __init__( self,
                   quiet = False,
                   init = True ):
+        self._initialised = False
         self._quiet = quiet
         self._acquire_syslock()
         self._parse_cmdline()
@@ -35,6 +41,9 @@ class Robot(object):
 
     def init(self):
         "Find and initialise hardware"
+        if self._initialised:
+            raise AlreadyInitialised()
+
         print "Initialising hardware."
         self.sricman = tssric.SricCtxMan()
         self._init_devs()
@@ -42,6 +51,8 @@ class Robot(object):
 
         if not self._quiet:
             self._dump_devs()
+
+        self._initialised = True
 
     def _acquire_syslock(self):
         try:
