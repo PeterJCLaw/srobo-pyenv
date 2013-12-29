@@ -15,12 +15,17 @@ class AlreadyInitialised(Exception):
     def __str__(self):
         return "Robot object can only be initialised once."
 
+class UnavailableAfterInit(Exception):
+    "The called function is unavailable after init()"
+    def __str__(self):
+        return "The called function is unavailable after init()"
+
 def pre_init(f):
     "Decorator for functions that may only be called before init()"
 
     def g(self, *args, **kw):
         if self._initialised:
-            raise Exception( "Function unavailable after initialisation" )
+            raise UnavailableAfterInit()
 
         return f(self, *args, **kw)
 
