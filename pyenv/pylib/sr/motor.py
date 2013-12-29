@@ -1,3 +1,4 @@
+import logging
 import threading
 import serial
 import math
@@ -12,6 +13,8 @@ CMD_SPEED1 = chr(3)
 # The maximum value that the motor board will accept
 PWM_MAX = 100
 
+logger = logging.getLogger( "sr.motor" )
+
 class Motor(object):
     "A motor"
     def __init__(self, path, serialnum = None):
@@ -23,7 +26,7 @@ class Motor(object):
             self.serial.write(CMD_RESET)
 
         if not self._is_mcv4b():
-            print "Warning: Motor board is not running the expected firmware"
+            logger.warning( "Motor board is not running the expected firmware" )
 
         self.output_controller = MotorOutputController(self.serial, self.lock)
 

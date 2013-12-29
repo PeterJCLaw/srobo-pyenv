@@ -1,3 +1,4 @@
+import logging
 import threading
 import serial
 
@@ -7,6 +8,8 @@ SERIAL_BAUD = 115200
 INPUT = "INPUT"
 OUTPUT = "OUTPUT"
 INPUT_PULLUP = "INPUT_PULLUP"
+
+logger = logging.getLogger( "sr.ruggeduino" )
 
 class IgnoredRuggeduino(object):
     def __init__(self, path, serialnum):
@@ -55,7 +58,7 @@ class Ruggeduino(RuggeduinoCmdBase):
         self.serialnum = serialnum
 
         if not self._is_srduino():
-            print "Warning: Ruggeduino is not running the SR firmware"
+            logger.warning( "Ruggeduino is not running the SR firmware" )
 
     def _is_srduino(self):
         "Determine if the board is flashed with the SR firmware"

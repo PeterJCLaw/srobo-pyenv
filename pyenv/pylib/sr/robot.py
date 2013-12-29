@@ -1,8 +1,26 @@
 # Copyright Robert Spanton 2011
 import json, sys, optparse, time, os, glob
+import logging
 import pysric, tssric
 import motor, power, servo, ruggeduino, vision
 import pyudev
+
+logger = logging.getLogger( "sr.robot" )
+
+def setup_logging():
+    "Apply default settings for logging"
+    # (We do this by default so that our users
+    # don't have to worry about logging normally)
+
+    logger.setLevel( logging.INFO )
+
+    h = logging.StreamHandler( sys.stdout )
+    h.setLevel( logging.INFO )
+
+    fmt = logging.Formatter( "%(message)s" )
+    h.setFormatter(fmt)
+
+    logger.addHandler(h)
 
 class NoCameraPresent(Exception):
     "Camera not connected."
@@ -16,7 +34,12 @@ class Robot(object):
 
     def __init__( self,
                   quiet = False,
-                  init = True ):
+                  init = True,
+                  config_logging = True ):
+
+        if config_logging:
+            setup_logging()
+
         self._quiet = quiet
         self._acquire_syslock()
         self._parse_cmdline()
@@ -29,13 +52,19 @@ class Robot(object):
             self.wait_start()
 
     @classmethod
-    def setup(cls, quiet = False ):
+    def setup(cls, quiet = False, config_logging = True ):
+        if config_logging:
+            setup_logging()
+
+        logger.debug( "Robot.setup( quiet = %s )", str(quiet) )
         return cls( init = False,
-                    quiet = quiet )
+                    quiet = quiet,
+                    # Logging is already configured
+                    config_logging = False )
 
     def init(self):
         "Find and initialise hardware"
-        print "Initialising hardware."
+        logger.info( "Initialising hardware." )
         self.sricman = tssric.SricCtxMan()
         self._init_devs()
         self._init_vision()
@@ -52,8 +81,8 @@ class Robot(object):
             raise Exception( "Robot lock could not be acquired. Have you created more than one Robot() object?" )
 
     def _dump_devs(self):
-        "Write a list of relevant devices out to stdout"
-        print "Found the following devices:"
+        "Write a list of relevant devices out to the log"
+        logger.info( "Found the following devices:" )
 
         self._dump_sric_bus()
         self._dump_usbdev_dict( self.motors, "Motors" )
@@ -67,7 +96,7 @@ class Robot(object):
             if devclass in [ pysric.SRIC_CLASS_POWER, pysric.SRIC_CLASS_MOTOR,
                              pysric.SRIC_CLASS_JOINTIO, pysric.SRIC_CLASS_SERVO ]:
                 for dev in ps.devices[devclass]:
-                    print " -", dev
+                    logger.info( " - %s", dev )
 
     def _dump_webcam(self):
         "Write information about the webcam to stdout"
@@ -77,7 +106,7 @@ class Robot(object):
             return
 
         # For now, just display the fact we have a webcam
-        print " - Webcam"
+        logger.info( " - Webcam" )
 
     def _dump_usbdev_dict(self, devdict, name ):
         "Write the contents of a device dict to stdout"
@@ -85,14 +114,15 @@ class Robot(object):
         if len(devdict) == 0:
             return
 
-        print " - {0}:".format( name )
+        logger.info( " - %s:", name )
 
         for key, motor in devdict.iteritems():
             if not isinstance( key, int ):
                 continue
 
-            print "    {index}: {motor}".format( index = key,
-                                                 motor = motor )
+            logger.info( "    %(index)s: %(motor)s",
+                         { "index": key,
+                           "motor": motor } )
 
     def _parse_cmdline(self):
         "Parse the command line arguments"
@@ -110,7 +140,7 @@ class Robot(object):
 
     def wait_start(self):
         "Wait for the start signal to happen"
-        print "Waiting for start signal."
+        logger.info( "Waiting for start signal." )
 
         os.mkfifo( self.startfifo )
         f = open( self.startfifo, "r" )
@@ -131,13 +161,16 @@ class Robot(object):
             raise Exception( "zone must be in range 0-3 inclusive -- value of %i is invalid" % self.zone )
 
     def ruggeduino_set_handler_by_id( self, r_id, handler ):
+        logger.debug( "Ruggeduino handler set for ID '%s'", r_id )
         self._ruggeduino_id_handlers[ r_id ] = handler
 
     def ruggeduino_set_handler_by_fwver( self, fwver, handler ):
+        logger.debug( "Ruggeduino handler set for firmware version '%s'", fwver )
         self._ruggeduino_fwver_handlers[ fwver ] = handler
 
     def ruggeduino_ignore_id( self, r_id ):
         "Ignore the Ruggeduino with the given ID"
+        logger.debug( "Ruggeduino ID '%s' set to be ignored", r_id )
         self.ruggeduino_set_handler_by_id( r_id, ruggeduino.IgnoredRuggeduino )
 
     def _init_devs(self):
