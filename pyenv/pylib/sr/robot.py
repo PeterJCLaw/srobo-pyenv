@@ -28,6 +28,27 @@ class NoCameraPresent(Exception):
     def __str__(self):
         return "No camera found."
 
+class AlreadyInitialised(Exception):
+    "The robot has been initialised twice"
+    def __str__(self):
+        return "Robot object can only be initialised once."
+
+class UnavailableAfterInit(Exception):
+    "The called function is unavailable after init()"
+    def __str__(self):
+        return "The called function is unavailable after init()"
+
+def pre_init(f):
+    "Decorator for functions that may only be called before init()"
+
+    def g(self, *args, **kw):
+        if self._initialised:
+            raise UnavailableAfterInit()
+
+        return f(self, *args, **kw)
+
+    return g
+
 class Robot(object):
     """Class for initialising and accessing robot hardware"""
     SYSLOCK_PATH = "/tmp/robot-object-lock"
@@ -36,10 +57,10 @@ class Robot(object):
                   quiet = False,
                   init = True,
                   config_logging = True ):
-
         if config_logging:
             setup_logging()
 
+        self._initialised = False
         self._quiet = quiet
         self._acquire_syslock()
         self._parse_cmdline()
@@ -64,6 +85,9 @@ class Robot(object):
 
     def init(self):
         "Find and initialise hardware"
+        if self._initialised:
+            raise AlreadyInitialised()
+
         logger.info( "Initialising hardware." )
         self.sricman = tssric.SricCtxMan()
         self._init_devs()
@@ -71,6 +95,8 @@ class Robot(object):
 
         if not self._quiet:
             self._dump_devs()
+
+        self._initialised = True
 
     def _acquire_syslock(self):
         try:
@@ -160,14 +186,17 @@ class Robot(object):
         if self.zone < 0 or self.zone > 3:
             raise Exception( "zone must be in range 0-3 inclusive -- value of %i is invalid" % self.zone )
 
+    @pre_init
     def ruggeduino_set_handler_by_id( self, r_id, handler ):
         logger.debug( "Ruggeduino handler set for ID '%s'", r_id )
         self._ruggeduino_id_handlers[ r_id ] = handler
 
+    @pre_init
     def ruggeduino_set_handler_by_fwver( self, fwver, handler ):
         logger.debug( "Ruggeduino handler set for firmware version '%s'", fwver )
         self._ruggeduino_fwver_handlers[ fwver ] = handler
 
+    @pre_init
     def ruggeduino_ignore_id( self, r_id ):
         "Ignore the Ruggeduino with the given ID"
         logger.debug( "Ruggeduino ID '%s' set to be ignored", r_id )
