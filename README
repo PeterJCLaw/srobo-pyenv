@@ -5,7 +5,7 @@ pyenv is an environment within which Student Robotics robot code is
 executed.
 
 There are a number of external repositories from which the binaries in
-this repository are constructed: 
+this repository are constructed:
 
  * libkoki: https://www.studentrobotics.org/cgit/libkoki.git
  * firmware blobs: From various SR boards.
@@ -24,7 +24,7 @@ Send patches in the following ways:
  * Send an email with the patches attached.  Generate these patches
    with git-format-patch so that they include a commit message,
    committer etc.  Include both "[PATCH]" and "[pyenv]" in the subject
-   line of the email. 
+   line of the email.
 
  * Send a pull-request email to srobo-devel with "[pyenv]" and
    "[pull-request]" in the subject line along with the *git URL* and
@@ -36,10 +36,10 @@ Things to avoid:
 
  * Merging in branches from other people, who've already sent their
    patches or pull-request to the maintainer.  *Especially* when
-   the patches of the other person are unrelated to your work.   
+   the patches of the other person are unrelated to your work.
 
  * Assuming that your patches will enter into the repository without
-   being modified (applies to pull-requests as well as patch sets) 
+   being modified (applies to pull-requests as well as patch sets)
 
 License
 -------
