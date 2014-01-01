@@ -7,7 +7,7 @@ executed.
 There are a number of external repositories from which the binaries in
 this repository are constructed: 
 
- * libkoki: https://www.studentrobotics.org/cgit/ckirkham/libkoki.git/
+ * libkoki: https://www.studentrobotics.org/cgit/libkoki.git
  * firmware blobs: From various SR boards.
  * Other libraries: The libraries in pyenv/lib are mainly from the SR
    openembedded tree.
