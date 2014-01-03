@@ -15,7 +15,7 @@ this repository are constructed:
 Note that the binaries in this repository need to be compiled for the
 correct architectures, and in the right build environment.  For
 example, the binaries that will run on the BeagleBoard need to be
-compiled for it in the SR openembedded buidl environment.
+compiled for it in the SR openembedded build environment.
 
 Patches
 -------
