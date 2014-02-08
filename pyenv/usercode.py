@@ -8,7 +8,9 @@ class UserCode(object):
 
         self.start_fifo = tempfile.mktemp()
 
-        print "Running user code."
+        user_rev = self._get_user_revision(user_dir)
+
+        print "Running user code", user_rev
         self.proc = Popen( [ "python", "-m", "sr.loggrok",
                              user_exec,
                              "--usbkey", log_dir,
@@ -16,6 +18,14 @@ class UserCode(object):
                            cwd = user_dir,
                            stdout = sys.stdout,
                            stderr = sys.stderr )
+
+    def _get_user_revision(self, user_dir):
+        user_rev_path = os.path.join(user_dir, '.user-rev')
+        user_rev = 'unknown @ unknown'
+        if os.path.exists(user_rev_path):
+            with open(user_rev_path) as f:
+                user_rev = f.read().strip()
+        return user_rev
 
     def start(self, match_info):
         """Send the start signal to the user's code, along with the match info"""
