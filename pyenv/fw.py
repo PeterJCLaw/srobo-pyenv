@@ -27,8 +27,9 @@ def sric_read_vbuf(dev):
     return d
 
 class FwUpdater(object):
-    def __init__(self, conf):
+    def __init__(self, conf, sricd_restart):
         self.conf = conf
+        self.sricd_restart = sricd_restart
         self.splash = None
 
     def __enter__(self):
@@ -48,14 +49,11 @@ class FwUpdater(object):
             self.splash.wait()
 
     def update(self):
-        sric_restart = False
-
-        # First, check if a power board update is required:
         if self.check_power_update():
             self.start_splash()
-            sric_restart = self.update_power()
-
-        return sric_restart
+            self.update_power()
+            # The power board's been adjusted, so restart it
+            self.sricd_restart()
 
     def check_power_update(self):
         "Determine if a power board update is necessary using its vbuf"

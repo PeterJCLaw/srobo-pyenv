@@ -42,10 +42,12 @@ class RobotRunner(object):
 
     def firmware_update(self):
         "Update firmware as necessary"
-        with fw.FwUpdater(config) as u:
-            if u.update():
-                "SRIC bus needs restarting"
-                sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
+        def sricd_restart():
+            sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
+        with fw.FwUpdater(config, sricd_restart) as u:
+            u.update()
 
     def start_gui(self):
         "Start all interactive GUI things"
