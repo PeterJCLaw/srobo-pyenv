@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import optparse, sys, os, time, shutil
 from subprocess import Popen, call
-import sricd, fw, log, squidge, usercode, conf
+import sricd, log, squidge, usercode, conf
 
 # The length of a match in seconds
 MATCH_DURATION = 180
@@ -45,6 +45,11 @@ class RobotRunner(object):
 
         def sricd_restart():
             sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+
+        # We import this here, because it depends on the sr module
+        # which is only available at this point in time
+        # (Our import path was extended after this file was imported)
+        import fw
 
         with fw.FwUpdater(config, sricd_restart) as u:
             u.update()

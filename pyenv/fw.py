@@ -32,12 +32,17 @@ class FwUpdater(object):
         self.sricd_restart = sricd_restart
         self.splash = None
 
+        self.fwdir = os.path.join( self.conf.prog_dir, "firmware" )
+        logpath = os.path.join( self.conf.log_dir, "fw-log.txt" )
+        self.fwlog = open( logpath , "at")
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceba):
         # Close our stuff
         self.stop_splash()
+        self.fwlog.close()
 
     def start_splash(self):
         self.splash = subprocess.Popen( [ os.path.join( self.conf.bin_dir,
@@ -57,29 +62,23 @@ class FwUpdater(object):
 
     def check_power_update(self):
         "Determine if a power board update is necessary using its vbuf"
-        import sr.pysric as pysric
         p = pysric.PySric()
         vb = sric_read_vbuf( p.devices[ pysric.SRIC_CLASS_POWER ][0] )
         return vb != power_vbuf
 
     def update_power( self):
-        logpath = os.path.join( self.conf.log_dir, "fw-log.txt" )
-        fwlog = open( logpath , "at")
-        fwdir = os.path.join( self.conf.prog_dir, "firmware" )
-
         p = subprocess.Popen( [ os.path.join( self.conf.bin_dir, "flashb" ),
-                                "-c", os.path.join( fwdir, "flashb.config" ),
+                                "-c", os.path.join( self.fwdir, "flashb.config" ),
                                 "-n", "power",
-                                os.path.join( fwdir, "power-top" ),
-                                os.path.join( fwdir, "power-bottom" ) ],
-                              stdout = fwlog, stderr = fwlog )
+                                os.path.join( self.fwdir, "power-top" ),
+                                os.path.join( self.fwdir, "power-bottom" ) ],
+                              stdout = self.fwlog, stderr = self.fwlog )
 
         # Let flashb do it's thing
         p.communicate()
         res = p.wait()
 
-        print >>fwlog, "flashb returned %i" % (res),
-        fwlog.close()
+        print >>self.fwlog, "flashb returned %i" % (res),
 
         log = open( logpath, "r" ).read()
         # See if an update actually occurred
