@@ -37,7 +37,7 @@ class Motor(object):
             self.serial.write(CMD_RESET)
 
         fw = self._get_fwver()
-        if check_fwver and fw != "MCV4B:1\n":
+        if check_fwver and fw != "MCV4B:2\n":
             self.close()
             raise IncorrectFirmware()
 
