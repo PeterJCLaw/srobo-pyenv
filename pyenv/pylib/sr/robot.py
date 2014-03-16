@@ -3,7 +3,7 @@ import json, sys, optparse, time, os, glob
 import logging
 import pysric, tssric
 import motor, power, servo, ruggeduino, vision
-import pyudev
+import usbenum
 
 logger = logging.getLogger( "sr.robot" )
 
@@ -225,12 +225,12 @@ class Robot(object):
         self._init_ruggeduinos()
 
     def _init_motors(self):
-        self.motors = self._init_usb_devices("MCV4B", motor.Motor)
+        self.motors = self._init_usb_devices(motor.USB_MODEL, motor.Motor)
 
     def _init_ruggeduinos(self):
         self.ruggeduinos = {}
 
-        for n, dev in enumerate( self._list_usb_devices( "Ruggeduino" ) ):
+        for n, dev in enumerate( usbenum.list_usb_devices( "Ruggeduino" ) ):
             handler = None
 
             snum = dev["ID_SERIAL_SHORT"]
@@ -254,22 +254,8 @@ class Robot(object):
             self.ruggeduinos[n] = srdev
             self.ruggeduinos[snum] = srdev
 
-    def _list_usb_devices(self, model):
-        "Create a sorted list of USB devices of the given type"
-        def _udev_compare_serial(x, y):
-            """Compare two udev serial numbers"""
-            return cmp(x["ID_SERIAL_SHORT"],
-                       y["ID_SERIAL_SHORT"])
-
-        udev = pyudev.Context()
-        devs = list(udev.list_devices( subsystem = "tty",
-                                       ID_MODEL = model ))
-        # Sort by serial number
-        devs.sort( cmp = _udev_compare_serial )
-        return devs
-
     def _init_usb_devices(self, model, ctor):
-        devs = self._list_usb_devices( model )
+        devs = usbenum.list_usb_devices( model )
 
         # Devices stored in a dictionary
         # Each device appears twice in this dictionary:

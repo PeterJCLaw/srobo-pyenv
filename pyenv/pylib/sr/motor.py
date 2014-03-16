@@ -2,6 +2,7 @@ import logging
 import threading
 import serial
 import math
+import usbenum
 
 SERIAL_BAUD = 1000000
 
@@ -13,7 +14,13 @@ CMD_SPEED1 = chr(3)
 # The maximum value that the motor board will accept
 PWM_MAX = 100
 
+# The USB model string:
+USB_MODEL = "MCV4B"
+
 logger = logging.getLogger( "sr.motor" )
+
+def find_devs():
+    return usbenum.list_usb_devices(USB_MODEL)
 
 class Motor(object):
     "A motor"
