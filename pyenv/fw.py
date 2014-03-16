@@ -26,54 +26,68 @@ def sric_read_vbuf(dev):
 
     return d
 
-def update_with_gui( root, bin_dir, log_dir ):
-    if not check_power_update():
-        "No update required"
+class FwUpdater(object):
+    def __init__(self, conf):
+        self.conf = conf
+        self.splash = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceba):
+        # Close our stuff
+        self.stop_splash()
+
+    def start_splash(self):
+        self.splash = subprocess.Popen( [ os.path.join( self.conf.bin_dir,
+                                                        "fwsplash" ) ] )
+
+    def stop_splash(self):
+        if self.splash is not None:
+            self.splash.kill()
+            self.splash.wait()
+
+    def update(self):
+        sric_restart = False
+
+        # First, check if a power board update is required:
+        if self.check_power_update():
+            self.start_splash()
+            sric_restart = self.update_power()
+
+        return sric_restart
+
+    def check_power_update(self):
+        "Determine if a power board update is necessary using its vbuf"
+        import sr.pysric as pysric
+        p = pysric.PySric()
+        vb = sric_read_vbuf( p.devices[ pysric.SRIC_CLASS_POWER ][0] )
+        return vb != power_vbuf
+
+    def update_power( self):
+        logpath = os.path.join( self.conf.log_dir, "fw-log.txt" )
+        fwlog = open( logpath , "at")
+        fwdir = os.path.join( self.conf.prog_dir, "firmware" )
+
+        p = subprocess.Popen( [ os.path.join( self.conf.bin_dir, "flashb" ),
+                                "-c", os.path.join( fwdir, "flashb.config" ),
+                                "-n", "power",
+                                os.path.join( fwdir, "power-top" ),
+                                os.path.join( fwdir, "power-bottom" ) ],
+                              stdout = fwlog, stderr = fwlog )
+
+        # Let flashb do it's thing
+        p.communicate()
+        res = p.wait()
+
+        print >>fwlog, "flashb returned %i" % (res),
+        fwlog.close()
+
+        log = open( logpath, "r" ).read()
+        # See if an update actually occurred
+        res = re.search( "Sending firmware version", log )
+
+        if res != None:
+            "An update did indeed occur"
+            return True
         return False
-
-    p = subprocess.Popen( [ os.path.join( bin_dir, "fwsplash" ) ] )
-
-    res = update_power( root, bin_dir, log_dir )
-
-    p.kill()
-    p.wait()
-    return res
-
-def check_power_update():
-    "Determine if a power board update is necessary using its vbuf"
-    import sr.pysric as pysric
-    p = pysric.PySric()
-    vb = sric_read_vbuf( p.devices[ pysric.SRIC_CLASS_POWER ][0] )
-    return vb != power_vbuf
-
-def update_power( root, bin_dir, log_dir ):
-    logpath = os.path.join( log_dir, "fw-log.txt" )
-    fwlog = open( logpath , "at")
-
-    fwdir = os.path.join( root, "firmware" )
-
-    p = subprocess.Popen( [ os.path.join( bin_dir, "flashb" ),
-                            "-c", os.path.join( fwdir, "flashb.config" ),
-                            "-n", "power",
-                            os.path.join( fwdir, "power-top" ),
-                            os.path.join( fwdir, "power-bottom" ) ],
-                          stdout = fwlog, stderr = fwlog )
-    
-    # Let flashb do it's thing
-    p.communicate()
-    res = p.wait()
-
-    print >>fwlog, "flashb returned %i" % (res),
-    fwlog.close()
-
-    log = open( logpath, "r" ).read()
-    # See if an update actually occurred
-    res = re.search( "Sending firmware version", log )
-
-    if res != None:
-        "An update did indeed occur"
-        return True
-    return False
-
-if __name__ == "__main__":
-    update_power()
