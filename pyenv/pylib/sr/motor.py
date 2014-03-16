@@ -10,6 +10,7 @@ CMD_RESET = chr(0)
 CMD_VERSION = chr(1)
 CMD_SPEED0 = chr(2)
 CMD_SPEED1 = chr(3)
+CMD_BOOTLOADER = chr(4)
 
 # The maximum value that the motor board will accept
 PWM_MAX = 100
@@ -22,9 +23,12 @@ logger = logging.getLogger( "sr.motor" )
 def find_devs():
     return usbenum.list_usb_devices(USB_MODEL)
 
+class IncorrectFirmware(Exception):
+    pass
+
 class Motor(object):
     "A motor"
-    def __init__(self, path, serialnum = None):
+    def __init__(self, path, serialnum = None, check_fwver = True):
         self.serialnum = serialnum
         self.serial = serial.Serial(path, SERIAL_BAUD, timeout=0.1)
         self.lock = threading.Lock()
@@ -32,20 +36,26 @@ class Motor(object):
         with self.lock:
             self.serial.write(CMD_RESET)
 
-        if not self._is_mcv4b():
-            logger.warning( "Motor board is not running the expected firmware" )
+        fw = self._get_fwver()
+        if check_fwver and fw != "MCV4B:1\n":
+            self.close()
+            raise IncorrectFirmware()
 
         self.output_controller = MotorOutputController(self.serial, self.lock)
 
         self.m0 = MotorChannel(self.output_controller, 0)
         self.m1 = MotorChannel(self.output_controller, 1)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceba):
+        self.close()
+
     def close(self):
         self.serial.close()
 
-    def _is_mcv4b(self):
-        fw = None
-
+    def _get_fwver(self):
         for x in range(10):
             # We make repeat attempts at reading the firmware version
             # because the motor controller may have only just been powered-up.
@@ -56,16 +66,29 @@ class Motor(object):
 
             if len(r) > 0 and r[-1] == "\n":
                 "Successfully read the firmware version"
-                fw = r
-                break
+                return r
 
-        if fw is None:
-            raise Exception( "Failed to read firmware version from motor controller" )
-
-        return fw == "MCV4B:1\n"
+        raise Exception( "Failed to read firmware version from motor controller" )
 
     def __repr__(self):
         return "Motor( serialnum = \"{0}\" )".format( self.serialnum )
+
+    def _jump_to_bootloader(self):
+        "Jump to the bootloader"
+        MAGIC = "Entering bootloader\n"
+
+        # Up the timeout to ensure bootloader response is received
+        self.serial.timeout = 0.5
+
+        with self.lock:
+            self.serial.write(CMD_BOOTLOADER)
+
+        # Check the command has been received
+        r = self.serial.read( len(MAGIC) )
+
+        if r != MAGIC:
+            # There's not much we can do about this at the moment
+            logger.warning("Incorrect bootloader entry string received")
 
 class MotorOutputController(object):
     def __init__(self, serial, lock):
@@ -110,6 +133,3 @@ class MotorChannel(object):
 
         self.output_controller.power[self.channel] = value
         self.output_controller.update()
-
-    def __del__(self):
-        self.power = 0

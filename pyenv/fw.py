@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # Routines for invoking flashb and thus updating board firmware.
 import subprocess, os.path, re
+import sr.motor
+from sr.power import Power
+import sr.pysric as pysric
+import threading
 
 SRIC_VERSION_BUF_CMD = 0x84
 
@@ -25,6 +29,20 @@ def sric_read_vbuf(dev):
         off += len(r)
 
     return d
+
+class LockableUnsafeDev(object):
+    "Lockable SRIC device that does *not* use a threadlocal connection"
+    def __init__(self, dev ):
+        # A lock for transactions on this device
+        self.dev = dev
+        self.lock = threading.Lock()
+
+    def __getattr__(self, name):
+        "Provide access to the underlying Sric device"
+        return getattr( self.dev, name )
+
+    def txrx( self, *args, **kw ):
+        return self.dev.txrx( *args, **kw )
 
 class FwUpdater(object):
     def __init__(self, conf, sricd_restart):
@@ -60,6 +78,16 @@ class FwUpdater(object):
             # The power board's been adjusted, so restart it
             self.sricd_restart()
 
+        # Now bring up the motor rail so we can talk to the motor boards
+        p = pysric.PySric()
+        dev = LockableUnsafeDev(p.devices[pysric.SRIC_CLASS_POWER][0])
+        # Power's constructor brings up the motor rail
+        power = Power(dev)
+
+        for mdev in sr.motor.find_devs():
+            if self.check_motor_update(mdev.device_node):
+                self.update_motor(mdev.device_node)
+
     def check_power_update(self):
         "Determine if a power board update is necessary using its vbuf"
         p = pysric.PySric()
@@ -88,3 +116,23 @@ class FwUpdater(object):
             "An update did indeed occur"
             return True
         return False
+
+    def check_motor_update(self, dev_path):
+        try:
+            motor = sr.motor.Motor(dev_path)
+        except sr.motor.IncorrectFirmware:
+            "Requires update"
+            return True
+
+        motor.close()
+        return False
+
+    def update_motor(self, dev_path):
+        with sr.motor.Motor(dev_path, check_fwver=False) as motor:
+            motor._jump_to_bootloader()
+
+        # Run stm32flash
+        subprocess.check_call( ["stm32flash", "-b", "115200", "-w",
+                                os.path.join( self.fwdir, "mcv4.bin" ),
+                                "-v", dev_path, "-g", "0"],
+                               stdout = self.fwlog, stderr = self.fwlog )
