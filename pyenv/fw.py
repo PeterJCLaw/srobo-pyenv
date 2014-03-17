@@ -138,8 +138,10 @@ class FwUpdater(object):
         def prog_cb(mode, prog):
             if mode == "READ":
                 msg = "Verifying motor board firmware."
+                prog = 0.5 + (prog * 0.5)
             else:
                 msg = "Writing motor board firmware."
+                prog *= 0.5
 
             m = { "type": "prog",
                   "fraction": prog,
