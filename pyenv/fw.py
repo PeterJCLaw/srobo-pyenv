@@ -4,6 +4,7 @@ import subprocess, os.path, re
 import sr.motor
 from sr.power import Power
 import sr.pysric as pysric
+import stm32loader
 import threading
 
 SRIC_VERSION_BUF_CMD = 0x84
@@ -136,8 +137,23 @@ class FwUpdater(object):
         with sr.motor.Motor(dev_path, check_fwver=False) as motor:
             motor._jump_to_bootloader()
 
-        # Run stm32flash
-        subprocess.check_call( ["stm32flash", "-b", "115200", "-w",
-                                os.path.join( self.fwdir, "mcv4.bin" ),
-                                "-v", dev_path, "-g", "0"],
-                               stdout = self.fwlog, stderr = self.fwlog )
+        def prog_cb(mode, prog):
+            print >>self.fwlog, mode, prog
+
+        c = stm32loader.CommandInterface( port=dev_path,
+                                          baudrate=115200,
+                                          prog_cb = prog_cb )
+        c.initChip()
+        c.cmdEraseMemory()
+
+        # Write
+        d = [ord(x) for x in open(os.path.join( self.fwdir, "mcv4.bin" ), "r").read()]
+        c.writeMemory(0x08000000, d)
+
+        # Verify:
+        v = c.readMemory(0x08000000, len(d))
+        if d != v:
+            raise Exception("Firmware verification error :(")
+
+        # Reset/quit bootloader
+        c.cmdGo(0x8000000)

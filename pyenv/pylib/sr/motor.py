@@ -90,6 +90,10 @@ class Motor(object):
             # There's not much we can do about this at the moment
             logger.warning("Incorrect bootloader entry string received")
 
+        # Get rid of any junk that comes from the motor board
+        # (we seem to get a null character coming through)
+        self.serial.read()
+
 class MotorOutputController(object):
     def __init__(self, serial, lock):
         self.serial = serial
