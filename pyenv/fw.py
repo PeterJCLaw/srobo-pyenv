@@ -103,7 +103,7 @@ class FwUpdater(object):
     def update_power( self):
         p = subprocess.Popen( [ os.path.join( self.conf.bin_dir, "flashb" ),
                                 "-c", os.path.join( self.fwdir, "flashb.config" ),
-                                "-n", "power",
+                                "-n", "power", "-f",
                                 os.path.join( self.fwdir, "power-top" ),
                                 os.path.join( self.fwdir, "power-bottom" ) ],
                               stdout = self.fwlog, stderr = self.fwlog )
