@@ -114,15 +114,6 @@ class FwUpdater(object):
 
         print >>self.fwlog, "flashb returned %i" % (res),
 
-        log = open( logpath, "r" ).read()
-        # See if an update actually occurred
-        res = re.search( "Sending firmware version", log )
-
-        if res != None:
-            "An update did indeed occur"
-            return True
-        return False
-
     def check_motor_update(self, dev_path):
         try:
             motor = sr.motor.Motor(dev_path)
