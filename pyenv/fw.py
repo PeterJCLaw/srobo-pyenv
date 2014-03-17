@@ -63,6 +63,10 @@ class FwUpdater(object):
         self.fwlog.close()
 
     def start_splash(self):
+        if self.splash is not None:
+            "Splash is already running"
+            return
+
         self.splash = subprocess.Popen( [ os.path.join( self.conf.bin_dir,
                                                         "fwsplash" ) ] )
 
@@ -86,6 +90,7 @@ class FwUpdater(object):
 
         for mdev in sr.motor.find_devs():
             if self.check_motor_update(mdev.device_node):
+                self.start_splash()
                 self.update_motor(mdev.device_node)
 
     def check_power_update(self):
