@@ -147,6 +147,3 @@ class MotorChannel(object):
         if self.power == 0:
             "Implement the new braking setting"
             self.power = 0
-
-    def __del__(self):
-        self.power = 0
