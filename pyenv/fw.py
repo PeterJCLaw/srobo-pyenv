@@ -92,10 +92,19 @@ class FwUpdater(object):
         # Power's constructor brings up the motor rail
         power = Power(dev)
 
-        for mdev in sr.motor.find_devs():
+        # Find motor boards that need updating:
+        need_update = []
+        for n, mdev in enumerate(sr.motor.find_devs()):
             if self.check_motor_update(mdev.device_node):
-                self.start_splash()
-                self.update_motor(mdev.device_node)
+                need_update.append((n, mdev))
+
+        if len(need_update):
+            self.start_splash()
+
+        for n, mdev in need_update:
+            self.update_motor(mdev.device_node, n, mdev["ID_SERIAL_SHORT"],
+                              prog_scale = 1.0/len(need_update),
+                              prog_offset = float(n)/len(need_update) )
 
     def check_power_update(self):
         "Determine if a power board update is necessary using its vbuf"
@@ -131,17 +140,22 @@ class FwUpdater(object):
         motor.close()
         return False
 
-    def update_motor(self, dev_path):
+    def update_motor(self, dev_path, num, serialnum, prog_scale, prog_offset):
         with sr.motor.Motor(dev_path, check_fwver=False) as motor:
             motor._jump_to_bootloader()
 
         def prog_cb(mode, prog):
+
             if mode == "READ":
-                msg = "Verifying motor board firmware."
-                prog = 0.5 + (prog * 0.5)
+                msg = "Verifying"
+                prog = (0.5 + (prog * 0.5))
             else:
-                msg = "Writing motor board firmware."
+                msg = "Writing to"
                 prog *= 0.5
+
+            prog *= prog_scale
+            prog += prog_offset
+            msg += " motor board {0} ({1}).".format( num, serialnum )
 
             m = { "type": "prog",
                   "fraction": prog,
