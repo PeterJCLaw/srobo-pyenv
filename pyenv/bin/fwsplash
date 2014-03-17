@@ -1,11 +1,52 @@
 #!/usr/bin/env python
 # Warn the user when upgrading board firmware.
 
-import pygtk, gtk, gobject
+import fcntl
+import json
+import os
+import pygtk, gtk, gobject, glib
+import sys
 
-def bar_timeout(bar):
-	bar.pulse()
-	return True
+class InpMonitor(glib.Source):
+    def __init__(self, f):
+        glib.Source.__init__(self)
+
+        fd = f.fileno()
+
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL, 0)
+        flags |= os.O_NONBLOCK
+        fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
+        self.f = f
+        p = glib.PollFD(fd, glib.IO_IN)
+        self.pollfd = p
+        self.add_poll(p)
+        self.data = ""
+
+    def prepare(self):
+        pass
+
+    def check(self):
+        if self.pollfd.revents:
+            return True
+        return False
+
+    def dispatch(self, callback, args):
+        "Something happened"
+        self.data += self.f.read()
+
+        lines = self.data.splitlines()
+
+        if self.data[-1] == "\n":
+            self.data = ""
+        else:
+            self.data = lines[-1]
+            self.data = self.data[:-1]
+
+        for l in lines:
+            callback( json.loads(l), *args )
+
+        return True
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 window.connect("destroy", gtk.main_quit)
@@ -14,16 +55,34 @@ window.set_border_width(30)
 vbox = gtk.VBox()
 window.add(vbox)
 
-message = gtk.Label("Updating board firmware. Do not switch anything off or unplug any cables.")
-message.set_line_wrap(True)
-message.set_justify(gtk.JUSTIFY_CENTER)
-vbox.pack_end(message)
+status = gtk.Label("")
+status.set_line_wrap(True)
+status.set_justify(gtk.JUSTIFY_CENTER)
+vbox.pack_end(status)
 
 bar = gtk.ProgressBar()
 bar.set_pulse_step(0.02)
 vbox.pack_end(bar)
 
-timer = gobject.timeout_add(50, bar_timeout, bar)
+message = gtk.Label("Updating board firmware. Do not switch anything off or unplug any cables.")
+message.set_line_wrap(True)
+message.set_justify(gtk.JUSTIFY_CENTER)
+vbox.pack_end(message)
+
+def cb(data):
+    if "type" in data:
+        t = data["type"]
+        if t == "pulse":
+            bar.pulse()
+        elif t == "prog":
+            bar.set_fraction(data["fraction"])
+
+    if "msg" in data:
+        status.set_label(data["msg"])
+
+i = InpMonitor(sys.stdin)
+i.attach()
+i.set_callback(cb)
 
 window.show_all()
 gtk.main()

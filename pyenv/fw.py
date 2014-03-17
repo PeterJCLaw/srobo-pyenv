@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # Routines for invoking flashb and thus updating board firmware.
+import json
 import subprocess, os.path, re
 import sr.motor
 from sr.power import Power
 import sr.pysric as pysric
 import stm32loader
 import threading
+import time
 
 SRIC_VERSION_BUF_CMD = 0x84
 
@@ -69,7 +71,8 @@ class FwUpdater(object):
             return
 
         self.splash = subprocess.Popen( [ os.path.join( self.conf.bin_dir,
-                                                        "fwsplash" ) ] )
+                                                        "fwsplash" ) ],
+                                        stdin = subprocess.PIPE )
 
     def stop_splash(self):
         if self.splash is not None:
@@ -108,8 +111,12 @@ class FwUpdater(object):
                                 os.path.join( self.fwdir, "power-bottom" ) ],
                               stdout = self.fwlog, stderr = self.fwlog )
 
-        # Let flashb do it's thing
-        p.communicate()
+        pulsemsg = "{0}\n".format( json.dumps( { "type": "pulse", "msg": "Updating power board firmware." } ) )
+
+        while p.poll() is None:
+            self.splash.stdin.write( pulsemsg )
+            self.splash.stdin.flush()
+            time.sleep(0.25)
         res = p.wait()
 
         print >>self.fwlog, "flashb returned %i" % (res),
@@ -129,6 +136,18 @@ class FwUpdater(object):
             motor._jump_to_bootloader()
 
         def prog_cb(mode, prog):
+            if mode == "READ":
+                msg = "Verifying motor board firmware."
+            else:
+                msg = "Writing motor board firmware."
+
+            m = { "type": "prog",
+                  "fraction": prog,
+                  "msg": msg }
+            s = "{0}\n".format(json.dumps(m))
+            self.splash.stdin.write(s)
+            self.splash.stdin.flush()
+
             print >>self.fwlog, mode, prog
 
         c = stm32loader.CommandInterface( port=dev_path,
