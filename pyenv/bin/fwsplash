@@ -48,41 +48,44 @@ class InpMonitor(glib.Source):
 
         return True
 
-window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-window.connect("destroy", gtk.main_quit)
-window.set_border_width(30)
+class ProgressWindow(gtk.Window):
+    def __init__(self):
+        gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+        self.connect("destroy", gtk.main_quit)
+        self.set_border_width(30)
 
-vbox = gtk.VBox()
-window.add(vbox)
+        self.vbox = gtk.VBox()
+        self.add(self.vbox)
 
-status = gtk.Label("")
-status.set_line_wrap(True)
-status.set_justify(gtk.JUSTIFY_CENTER)
-vbox.pack_end(status)
+        self.status = gtk.Label("")
+        self.status.set_line_wrap(True)
+        self.status.set_justify(gtk.JUSTIFY_CENTER)
+        self.vbox.pack_end(self.status)
 
-bar = gtk.ProgressBar()
-bar.set_pulse_step(0.02)
-vbox.pack_end(bar)
+        self.bar = gtk.ProgressBar()
+        self.bar.set_pulse_step(0.02)
+        self.vbox.pack_end(self.bar)
 
-message = gtk.Label("Updating board firmware. Do not switch anything off or unplug any cables.")
-message.set_line_wrap(True)
-message.set_justify(gtk.JUSTIFY_CENTER)
-vbox.pack_end(message)
+        message = gtk.Label("Updating board firmware. Do not switch anything off or unplug any cables.")
+        message.set_line_wrap(True)
+        message.set_justify(gtk.JUSTIFY_CENTER)
+        self.vbox.pack_end(message)
 
-def cb(data):
-    if "type" in data:
-        t = data["type"]
-        if t == "pulse":
-            bar.pulse()
-        elif t == "prog":
-            bar.set_fraction(data["fraction"])
+        self.inpmon = InpMonitor(sys.stdin)
+        self.inpmon.attach()
+        self.inpmon.set_callback(self.cb)
 
-    if "msg" in data:
-        status.set_label(data["msg"])
+    def cb(self, data):
+        if "type" in data:
+            t = data["type"]
+            if t == "pulse":
+                self.bar.pulse()
+            elif t == "prog":
+                self.bar.set_fraction(data["fraction"])
 
-i = InpMonitor(sys.stdin)
-i.attach()
-i.set_callback(cb)
+        if "msg" in data:
+            self.status.set_label(data["msg"])
 
-window.show_all()
+prog = ProgressWindow()
+prog.show_all()
 gtk.main()
