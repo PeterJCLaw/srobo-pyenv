@@ -57,6 +57,9 @@ class FwUpdater(object):
         logpath = os.path.join( self.conf.log_dir, "fw-log.txt" )
         self.fwlog = open( logpath , "at")
 
+        # Whether the user has confirmed the update's about to happen yet
+        self.user_confirmed = False
+
     def __enter__(self):
         return self
 
@@ -72,7 +75,15 @@ class FwUpdater(object):
 
         self.splash = subprocess.Popen( [ os.path.join( self.conf.bin_dir,
                                                         "fwsplash" ) ],
-                                        stdin = subprocess.PIPE )
+                                        stdin = subprocess.PIPE, stdout = subprocess.PIPE )
+
+    def wait_confirmation(self):
+        if self.user_confirmed:
+            return
+
+        self.start_splash()
+        self.splash.stdout.readline()
+        self.user_confirmed = True
 
     def stop_splash(self):
         if self.splash is not None:
@@ -81,7 +92,7 @@ class FwUpdater(object):
 
     def update(self):
         if self.check_power_update():
-            self.start_splash()
+            self.wait_confirmation()
             self.update_power()
             # The power board's been adjusted, so restart it
             self.sricd_restart()
@@ -99,7 +110,7 @@ class FwUpdater(object):
                 need_update.append((n, mdev))
 
         if len(need_update):
-            self.start_splash()
+            self.wait_confirmation()
 
         for n, mdev in need_update:
             self.update_motor(mdev.device_node, n, mdev["ID_SERIAL_SHORT"],

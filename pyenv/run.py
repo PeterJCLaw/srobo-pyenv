@@ -25,6 +25,9 @@ class RobotRunner(object):
         self.start_wm()
 
         self._test_sric()
+
+        # The firmware updater requires input
+        self.start_sr_input()
         self.firmware_update()
 
         self.user = usercode.UserCode( user_exec, config.log_dir, config.user_dir )
@@ -40,11 +43,21 @@ class RobotRunner(object):
                 os.path.join( self.config.usr_dir,
                               "share", "sr", "sric-fail.png" ) ] )
 
+    def start_sr_input(self):
+        "Funnel button presses through to X"
+        self.sr_input = Popen( "srinput" )
+
+    def restart_sr_input(self):
+        self.sr_input.kill()
+        self.sr_input.wait()
+        self.start_sr_input()
+
     def firmware_update(self):
         "Update firmware as necessary"
 
         def sricd_restart():
             sricd.restart( os.path.join( args.log_dir, "sricd.log" ) )
+            self.restart_sr_input()
 
         # We import this here, because it depends on the sr module
         # which is only available at this point in time
@@ -62,9 +75,6 @@ class RobotRunner(object):
 
         # Start the GUI
         self.squidge = squidge.Squidge( self.config.log_fname )
-
-        # Funnel button presses through to X
-        Popen( "srinput" )
 
     def sigterm_handler(self, signum, frame):
         "Handle TERM signal"

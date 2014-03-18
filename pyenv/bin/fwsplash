@@ -86,6 +86,50 @@ class ProgressWindow(gtk.Window):
         if "msg" in data:
             self.status.set_label(data["msg"])
 
+class PromptWindow(gtk.Window):
+    def __init__(self, progwindow):
+        gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+        self.set_border_width(30)
+        self.set_default_size( 480, 272 )
+        self.progwindow = progwindow
+
+        msg = """Some of the boards in your kit need a firmware update.
+
+This update will happen shortly.  Do not turn your robot off or unplug any cables whilst it is happening.
+
+To confirm that you have read this message, and start the update, please press both of the buttons on the right of this screen."""
+        l = gtk.Label( msg )
+        l.set_line_wrap(True)
+        l.set_justify(gtk.JUSTIFY_CENTER)
+        self.add(l)
+
+        self.connect("key-press-event", self.key_press)
+        self.connect("key-release-event", self.key_release)
+
+        self.pgup_pressed = False
+        self.pgdown_pressed = False
+
+    def key_press(self, widget, event):
+        if event.keyval == gtk.keysyms.Page_Up:
+            self.pgup_pressed = True
+        elif event.keyval == gtk.keysyms.Page_Down:
+            self.pgdown_pressed = True
+
+        if self.pgup_pressed and self.pgdown_pressed:
+            # Indicate to our caller that the confirmation has happened
+            print "Confirmed"
+            sys.stdout.flush()
+            self.destroy()
+            self.progwindow.show_all()
+
+    def key_release(self, widget, event):
+        if event.keyval == gtk.keysyms.Page_Up:
+            self.pgup_pressed = False
+        elif event.keyval == gtk.keysyms.Page_Down:
+            self.pgdown_pressed = False
+
 prog = ProgressWindow()
-prog.show_all()
+prompt = PromptWindow(prog)
+prompt.show_all()
+
 gtk.main()
