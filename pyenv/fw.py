@@ -177,6 +177,8 @@ class FwUpdater(object):
 
             print >>self.fwlog, mode, prog
 
+        print >>self.fwlog, "Flashing motor board", serialnum
+
         c = stm32loader.CommandInterface( port=dev_path,
                                           baudrate=115200,
                                           prog_cb = prog_cb )
@@ -191,6 +193,8 @@ class FwUpdater(object):
         v = c.readMemory(0x08000000, len(d))
         if d != v:
             raise Exception("Firmware verification error :(")
+
+        print >>self.fwlog, "Verified OK"
 
         # Reset/quit bootloader
         c.cmdGo(0x8000000)
