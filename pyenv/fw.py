@@ -33,6 +33,31 @@ def sric_read_vbuf(dev):
 
     return d
 
+def flash_motor(dev_path, serialnum, prog_cb, fw_path, log_fd):
+    print >>log_fd, "Flashing motor board", serialnum
+
+    c = stm32loader.CommandInterface( port=dev_path,
+                                      baudrate=115200,
+                                      prog_cb = prog_cb )
+    c.initChip()
+    c.cmdEraseMemory()
+
+    # Write
+    d = [ord(x) for x in open(fw_path, "r").read()]
+    c.writeMemory(0x08000000, d)
+
+    # Verify:
+    v = c.readMemory(0x08000000, len(d))
+    if d != v:
+        raise Exception("Firmware verification error :(")
+
+    print >>log_fd, "Verified OK"
+
+    # Reset/quit bootloader
+    c.cmdGo(0x8000000)
+
+
+
 class LockableUnsafeDev(object):
     "Lockable SRIC device that does *not* use a threadlocal connection"
     def __init__(self, dev ):
@@ -177,24 +202,6 @@ class FwUpdater(object):
 
             print >>self.fwlog, mode, prog
 
-        print >>self.fwlog, "Flashing motor board", serialnum
-
-        c = stm32loader.CommandInterface( port=dev_path,
-                                          baudrate=115200,
-                                          prog_cb = prog_cb )
-        c.initChip()
-        c.cmdEraseMemory()
-
-        # Write
-        d = [ord(x) for x in open(os.path.join( self.fwdir, "mcv4.bin" ), "r").read()]
-        c.writeMemory(0x08000000, d)
-
-        # Verify:
-        v = c.readMemory(0x08000000, len(d))
-        if d != v:
-            raise Exception("Firmware verification error :(")
-
-        print >>self.fwlog, "Verified OK"
-
-        # Reset/quit bootloader
-        c.cmdGo(0x8000000)
+        flash_motor(dev_path, serialnum, prog_cb,
+                    os.path.join( self.fwdir, "mcv4.bin" ),
+                    self.fwlog)
