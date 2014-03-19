@@ -45,6 +45,13 @@ class RobotRunner(object):
 
     def start_sr_input(self):
         "Funnel button presses through to X"
+
+        # First, tell the power board to enable button notifications
+        import sr.pysric as pysric
+        p = pysric.PySric()
+        pdev = p.devices[pysric.SRIC_CLASS_POWER][0]
+        pdev.txrx([5, 1])
+
         self.sr_input = Popen( "srinput" )
 
     def restart_sr_input(self):
