@@ -144,6 +144,12 @@ class FwUpdater(object):
 
     def check_power_update(self):
         "Determine if a power board update is necessary using its vbuf"
+
+        # Disable power board firmware updates
+        # There's some kind of funk involved in the version checking
+        # that isn't worth fixing now.  (And never will be.)
+        return False
+
         p = pysric.PySric()
         vb = sric_read_vbuf( p.devices[ pysric.SRIC_CLASS_POWER ][0] )
         return vb != power_vbuf
